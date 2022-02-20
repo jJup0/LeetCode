@@ -1,0 +1,109 @@
+TO rect :b :h
+  pd
+  repeat 2 [fd :h rt 90 fd :b rt 90]
+  pu
+END
+
+TO tri :l
+  pd
+  lt 90
+  fd :l * 0.5
+  rt 180 - 63
+  fd :l * 1.11803398875
+  rt 180 - 54
+  fd :l * 1.11803398875
+  rt 180 - 63
+  fd :l * 0.5
+  rt 90
+  pu
+END
+
+TO fillFR :color
+  setpencolor :color
+  rt 45
+  fd 3
+  fill
+  bk 3
+  lt 45
+  setpencolor 0
+END
+
+setpencolor 0
+showturtle
+pd
+ellipse 200 50
+pu
+
+fd 50
+lt 90
+fd 10
+rt 90
+rect 20 20
+fillFR 15
+
+fd 20
+lt 90
+fd 190
+rt 90
+rect 400 10
+fillFR 15
+
+bk 130
+rt 90
+fd 100
+lt 90
+
+rect 200 10
+fillFR 15
+
+rt 90
+fd 100
+lt 90
+fd 55
+rect 200 10
+
+bk 10
+rt 90
+fd 200
+lt 90
+
+setpencolor 1
+
+tri 40
+
+setpencolor 0
+pu
+lt 15
+fd 7
+fill 
+fd 5 
+fill
+setpencolor 15
+fill
+bk 12
+rt 15
+setpencolor 0
+
+tri 40
+
+
+
+lt 90
+fd 250
+rt 90
+fd 38
+ellipse 40 40
+
+setpencolor 3
+fill
+setpencolor 0
+
+
+pu
+bk 25
+fill
+rt 90
+fd 80
+fill
+fd 100
+fillFR 15
