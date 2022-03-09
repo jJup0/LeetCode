@@ -1,4 +1,3 @@
-# actually did it myself lol
 from typing import List
 
 
@@ -10,7 +9,7 @@ class Solution:
 
         dpCopy = [[0] * (len(prices)) for _ in range(k + 1)]
         for i in range(1, k + 1):
-            maxDiff = float('-inf')
+            maxDiff = -10000    # constraint 0 <= prices[i] <= 1000, avoid float('-inf') for type checker
 
             for j in range(1, len(prices)):
 
