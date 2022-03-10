@@ -6,63 +6,30 @@ class ListNode:
 
 
 class Solution(object):
-    def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
-        curr = head = ListNode(-1)
-        carry = 0
+    def addTwoNumbers(self, l1:ListNode, l2:ListNode) -> ListNode:
+        # more practical to use dummy than head
+        curr = dummy = ListNode(-1)  
+        
+        digit_sum = 0
         while l1 or l2:
-
-            thisSum = carry
+            # either might be None
             if l1:
-                thisSum += l1.val
-                l1 = l1.next
+                digit_sum += l1.val
+                l1 = l1.next 
             if l2:
-                thisSum += l2.val
+                digit_sum += l2.val
                 l2 = l2.next
-
-            carry = thisSum >= 10
-            curr.next = curr = ListNode(thisSum % 10)
-
-        if carry:
+                
+            # add digit sum to result list
+            curr.next = ListNode(digit_sum % 10)
+            
+            # set digit sum to 0 or 1 depending on the need to "carry the one" 
+            digit_sum = (digit_sum >= 10)
+            
+            curr = curr.next
+        
+        # if last addition has overflow, account for this
+        if digit_sum:
             curr.next = ListNode(1)
-        return head.next
-
-
-# class Solution(object):
-#     def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
-#         dummyHead = ListNode(0)
-#         cur = dummyHead
-#         carry = 0
-#         while l1 or l2:
-#             val1 = l1.val if l1 else 0
-#             val2 = l2.val if l2 else 0
-#             carry, res = divmod(val1 + val2 + carry, 10)
-#             cur.next = ListNode(res)
-#             cur = cur.next  # cur redefined to point to the next item
-#             l1 = l1.next if l1 else None
-#             l2 = l2.next if l2 else None
-#         if carry:
-#             cur.next = ListNode(carry)
-#         # has 'start' of cur stored, cur was redifined earlier, no longer contains start
-#         return dummyHead.next
-
-
-# class altSolution(object):
-#     def addTwoNumbers(self, l1, l2):
-#         cur = dummyHead = ListNode(0)
-#         carry = 0
-#         while l1 or l2:
-#             val1 = l1.val if l1 else 0
-#             val2 = l2.val if l2 else 0
-#             thissum = val1 + val2 + carry
-#             if thissum >= 10:
-#                 carry, res = 1, thissum - 10
-#             else:
-#                 carry, res = 0, thissum
-#             cur.next = ListNode(res)
-#             cur = cur.next  # cur redefined to point to the next item
-#             l1 = l1.next if l1 else None
-#             l2 = l2.next if l2 else None
-#         if carry:
-#             cur.next = ListNode(carry)
-#         # has 'start' of cur stored, cur was redifined earlier, no longer contains start
-#         return dummyHead.next
+            
+        return dummy.next  
