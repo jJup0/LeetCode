@@ -1,24 +1,24 @@
-# class Solution(object):
-def isValid(self, s):
-    """
-    :type s: str
-    :rtype: bool
-    """
-    if (len(s) % 2) == 1:  # didnt improve speed
-        return False
-    parenthPairs = {
-        '(': ')',
-        '[': ']',
-        '{': '}',
-        ' ': '\n'   # ' ' is our starting string
-    }
-    bracketStack = ' '
-    for l in s:
-        if l in parenthPairs:  # currently opening
-            bracketStack += l
-        # current is the one that should close
-        elif l == parenthPairs[bracketStack[-1]]:
-            bracketStack = bracketStack[:-1]
-        else:
-            return False
-        return bracketStack == ' '
+class Solution:
+    def isValid(self, s: str) -> bool:
+        # keeps a stack of open brackets
+        bracket_stack = [' ']
+        # opening bracket to closing bracket map
+        open_to_close = {
+            '(': ')',
+            '[': ']',
+            '{': '}',
+            ' ': None
+        }
+
+        for c in s:
+            # opening brackets always allowed, append to stack
+            if c in open_to_close:  # currently opening
+                bracket_stack.append(c)
+            # if closing bracket, check if its closing the last open bracket
+            # if not return false
+            elif c != open_to_close[bracket_stack.pop()]:
+                return False
+
+        # if stack == [' '] at the end, then return true
+        # otherwise still unclosed brackets and return false
+        return len(bracket_stack) == 1
