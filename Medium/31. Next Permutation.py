@@ -1,60 +1,28 @@
-def nopenextPermutation(self, nums: [int]) -> None:
-    """
-    Do not return anything, modify nums in-place instead.
-    """
-    if len(nums) == 2:
-        nums[0], nums[1] = nums[1], nums[0]
-        return
-    retVal = nums.copy()
-    i = len(nums) - 1
-    biggestVal = 0
-    while i > 0:
-        if nums[i] >= biggestVal:
-            biggestVal = nums[i]
-        else:
-            retVal = nums[:i] + nums[:i-1:-1]
-            nums[:] = retVal
-            # print('done')
-            return
-        i -= 1
-    if nums and nums[0] < biggestVal:
-        # print('rev')
-        i = len(nums)-1
-        firstnum = nums[0]
-        temp = []
-        while i > 0:
-            if nums[i] > firstnum:
-                temp.append(nums.pop(i))
-                print(temp)
-                break
-            i -= 1
-        nums.sort()
-        temp += nums
-        nums[:] = temp
-        return
-    # print('sort')
-    nums.sort()
-
-
 class Solution:
     def nextPermutation(self, nums: [int]) -> None:
-        i = len(nums) - 1
-        biggestVal = 0
-        while i >= 0:
-            if nums[i] >= biggestVal:
-                biggestVal = nums[i]
+        # store the highest digit present starting from least significant
+        highest_digit = 0
+        for i in range(len(nums) - 1, -1, -1):
+            # iterate through digits while they are non-decreasing
+            if nums[i] >= highest_digit:
+                highest_digit = nums[i]
             else:
-                retVal = nums[:i]
+                # found a digit lower than previous ones, this one will be switched out with
+                # the closest next highest digit of all less significant digits
+                # local store for efficiency
                 firstnum = nums[i]
-                j = len(nums)-1
-                while j > i:
+                # since digits are non-decreasing from least significant to nums[i], find
+                # first one that is bigger, it will be the closest one
+                for j in range(len(nums) - 1, i, -1):
                     if nums[j] > firstnum:
-                        retVal.append(nums.pop(j))
+                        # switch the digits
+                        nums[i] = nums[j]
+                        nums[j] = firstnum
                         break
-                    j -= 1
-                temp = nums[i:]
-                temp.sort()
-                nums[:] = retVal + temp
-                return
-            i -= 1
-        nums.sort()
+                # sort the rest of the digits to get the "first" permutation of them
+                nums[i+1:] = sorted(nums[i+1:])
+                break
+        else:
+            # nums is in reverse sorted order, which is the last permutation,
+            # so sort in normal order for first permutation
+            nums.sort()
