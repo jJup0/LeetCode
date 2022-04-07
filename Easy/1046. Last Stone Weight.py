@@ -1,27 +1,26 @@
+import heapq
 from typing import List
 
 
 class Solution:
     def lastStoneWeight(self, stones: List[int]) -> int:
+        # create a max heap for the stones, possible by negating values
+        # and creating a min heap from these values
+        stones = list(-x for x in stones)
+        heapq.heapify(stones)
+
+        # play the game until only one or no stones are left
         while len(stones) > 1:
-            stones.sort()
-            s3 = 0
-            biggestS3 = 0
-            for _ in range(round(len(stones) + 0.9/2)):
-                if len(stones) < 2 or biggestS3 > stones[-2]:
-                    break
-                if s3 >= stones[-2]:
-                    s1 = s3
-                    s2 = stones.pop(-1)
-                else:
-                    s1, s2 = stones.pop(-1), stones.pop(-1)
-                    if s3:
-                        stones.insert(0, s3)
-                s3 = abs(s1 - s2)
-                if s3 > biggestS3:
-                    biggestS3 = s3
-            if s3:
-                stones.append(s3)
-        if stones:
-            return stones[0]
-        return 0
+            # get the two biggest rocks, no need to negate them, as only their difference is relevant
+            x = heapq.heappop(stones)
+            y = heapq.heappop(stones)
+
+            # result of smashing the rocks, result is non-positive as x, y < 0 and x < y
+            result = x - y
+
+            # if not 0, push the result onto the heap
+            if result:
+                heapq.heappush(stones, result)
+
+        # if there is a stone left return its weight (negated from heap), otherwise return 0
+        return -stones[0] if stones else 0
