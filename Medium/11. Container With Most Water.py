@@ -25,6 +25,6 @@ class Solution:
                 lowerb_height = height[lowerb]
             else:
                 upperb -= 1
-                upperb_height[upperb]
+                upperb_height = height[upperb]
 
         return res
