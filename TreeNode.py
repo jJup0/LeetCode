@@ -5,7 +5,7 @@ from typing import Any, List, Optional
 class TreeNode:
 
     @staticmethod
-    def fromList(list: Optional[List[Any]]):
+    def from_structure(list: Optional[List[Any]]):
         if not list:
             return None
 
@@ -17,10 +17,16 @@ class TreeNode:
         while val_queue:
             node = node_queue.popleft()
 
+            if not val_queue:
+                break
+
             left_val = val_queue.popleft()
             if left_val:
                 node.left = TreeNode(left_val)
                 node_queue.append(node.left)
+
+            if not val_queue:
+                break
 
             right_val = val_queue.popleft()
             if right_val:
@@ -28,6 +34,16 @@ class TreeNode:
                 node_queue.append(node.right)
 
         return root
+
+    @staticmethod
+    def fromList(list: Optional[List[Any]]):
+        if not list:
+            return None
+
+        res = TreeNode(list[0])
+        for val in list[1:]:
+            res.add_node(val)
+        return res
 
     def __init__(self, val: Any = 0, left=None, right=None):
         self.val = val
@@ -52,3 +68,21 @@ class TreeNode:
             if l[i]:
                 break
         return str(l[:i+1])
+
+    def add_node(self, val: Any):
+        if val < self.val:
+            if self.left:
+                self.left.add_node(val)
+            else:
+                self.left = TreeNode(val)
+        else:
+            if self.right:
+                self.right.add_node(val)
+            else:
+                self.right = TreeNode(val)
+
+
+if __name__ == "__main__":
+    null = None
+    x = TreeNode.from_structure([5, 3, 6, 2, 4, null, null, 1])
+    print(x)
