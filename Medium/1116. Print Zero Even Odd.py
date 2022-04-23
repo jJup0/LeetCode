@@ -1,4 +1,3 @@
-
 from multiprocessing import Semaphore
 from typing import Callable
 
@@ -7,39 +6,33 @@ from typing import Callable
 class ZeroEvenOdd:
     def __init__(self, n):
         self.n = n
-        self.curr = 1
+        # semaphores for printing 1, even and odd, initialize zeroSem with 1 as 0 needs to print first
         self.zeroSem = Semaphore(1)
         self.evenSem = Semaphore(0)
         self.oddSem = Semaphore(0)
 
     def zero(self, printNumber: Callable[[int], None]) -> None:
-        while self.curr < self.n:
+        # 0 needs to be printed n times
+        # i is next value to print, determines which semaphore to release
+        for i in range(1, self.n + 1, + 1):
+            # acquire zeroSem, print, release depending on i
             self.zeroSem.acquire()
             printNumber(0)
-            if self.curr % 2:
+            if i % 2:
                 self.oddSem.release()
             else:
                 self.evenSem.release()
 
-        if self.n == 1:
-            self.zeroSem.acquire()
-            printNumber(0)
-            self.oddSem.release()
-
     def even(self, printNumber: Callable[[int], None]) -> None:
-        while self.curr < self.n:
+        # even numbers need print from 2 to (including) self.n
+        for i in range(2, self.n + 1, 2):
             self.evenSem.acquire()
-            printNumber(self.curr)
-            self.curr += 1
+            printNumber(i)
             self.zeroSem.release()
 
     def odd(self, printNumber: Callable[[int], None]) -> None:
-        while self.curr < self.n:
+        # odd numbers need print from 1 to (including) self.n
+        for i in range(1, self.n + 1, 2):
             self.oddSem.acquire()
-            printNumber(self.curr)
-            self.curr += 1
+            printNumber(i)
             self.zeroSem.release()
-
-        if self.n == 1:
-            self.oddSem.acquire()
-            printNumber(1)
