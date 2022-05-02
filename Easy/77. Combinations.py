@@ -11,34 +11,36 @@ class Solution:
     """
 
     def combine(self, n: int, k: int) -> List[List[int]]:
-        def backtrack(start, combination):
+        def backtrack(start, comb_idx):
             """Generates combinations
             Parameters
                 start : int
                     Starting val of numbers left to chooose for combination
-                combination : int
-                    Previously generated combination
+                comb_idx : int
+                    Current index of combination which should be iterated over
                 Returns
                     Nothing, only appends to combinations list
             """
+            nonlocal combination
             nonlocal combinations
-            # if no number left to append to combination, append to result
-            if len(combination) == k:
+            # if no number left to append to combination, append a copy to result
+            if comb_idx == k:
                 combinations.append(combination.copy())
             else:
-                # else append dummy value, will be reassigned in loop
-                combination.append(-1)
-                # go through all values between start and n, or less, for example
-                # there can not be a 5 choose 4 combination that starts with 4 (if values in permutation are in order)
-                for i in range(start, min(n + 1, len(combination) + n - k + 1)):
-                    combination[-1] = i
+                # go through all values between start and n - k + comb_idx + 1
+                # reason: e.g. there can not be a 5 choose 4 combination that starts with 4 (if values in permutation are in order)
+                for i in range(start, n + 1 + comb_idx - k + 1):
+                    combination[comb_idx] = i
                     # recursion for next value in combination, start at i + 1
-                    backtrack(i + 1, combination)
+                    backtrack(i + 1, comb_idx + 1)
                 # pop dummy value
-                combination.pop()
 
+        # current combination in recursion
+        combination = [0] * k
+
+        # result variable
         combinations = []
-        backtrack(1, [])
+        backtrack(1, 0)
         return combinations
 
 
