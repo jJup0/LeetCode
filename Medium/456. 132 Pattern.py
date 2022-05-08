@@ -2,17 +2,38 @@ from typing import List
 
 
 class Solution:
+    """
+    Given an array of n integers nums, a 132 pattern is a subsequence of three integers
+    nums[i], nums[j] and nums[k] such that i < j < k and nums[i] < nums[k] < nums[j].
+    Return true if there is a 132 pattern in nums, otherwise, return false.
+    Constraints:
+        n == nums.length
+        1 <= n <= 2 * 10^5
+        -10^9 <= nums[i] <= 10^9
+    """
+
     def find132pattern(self, nums: List[int]) -> bool:
 
-        stack = []                              # stack to track decreasing vals for num_k candidates
-        num_k = float('-inf')                   # last (middle value) number
+        # go through list in reverse order, keep stack of all values that have
+        # been bigger than biggest value so far, as potential future candidates
+        # for being nums[k] in the 132 pattern. top of stack is lowest number,
+        # increasing from there.
+        stack = []
+
+        # value to store hightest nums[k] possible (second highest number while going in reverse order)
+        nums_k = float('-inf')
         for num in reversed(nums):
 
-            if num < num_k:                     # num = num_i
+            # if num is smaller than nums_k, num is nums[i] candidate and return True
+            if num < nums_k:
                 return True
 
-            while stack and stack[-1] < num:    # kickout all numbers so far that are smaller, store last one
-                num_k = stack.pop()             # contains biggest number smaller than num_j candidate = num_k
-            stack.append(num)                   # append num_j candidate, biggest number lies at bottom of stack
+            # if num is larger thatn largest nums[j] candidate so far, virtually set
+            # num as nums[j], and update nums_k to be the largest number smaller than num
+            while stack and stack[-1] < num:
+                nums_k = stack.pop()
+
+            # append num to stack, as it is potential future nums[k] candidate
+            stack.append(num)
 
         return False
