@@ -1,6 +1,3 @@
-import random
-
-
 class Solution:
     """
     Given a string containing just the characters '(' and ')', find the length of the longest valid
@@ -11,41 +8,31 @@ class Solution:
     """
 
     def longestValidParentheses(self, s: str) -> int:
-        # stack storing longest valid parentheses at current depth so far, and starting index
-        # stacks have equal size at each iteration
-        streak_stack = [0]
-        i_stack = [0]
+        # stack storing starting indexes of unclosed brackets,
+        # with stack[0] storing last position where no brackets are open
+        stack = [-1]
 
         # result variable
         res = 0
 
         for i, c in enumerate(s):
-            if c == '(':
-                i_stack.append(i)
-                streak_stack.append(0)
+            if c == "(":
+                # append index to opening brackets stack
+                stack.append(i)
             else:
+                # remove last index from stack as bracket is now closed
+                stack.pop()
+
                 # if closing bracket, and there are unclosed brackets
-                if len(i_stack) > 1:
-                    # delete last streak at depth as opening bracket depth is now lower
-                    streak_stack.pop()
-
-                    # get last index of previous depth
-                    prev_i = i_stack.pop()
-
-                    # calculate new valid bracket length, current length plus previous streak
-                    valid_brack_length = i - prev_i + 1 + streak_stack[-1]
-
-                    # update res if longer
-                    if valid_brack_length > res:
-                        res = valid_brack_length
-
-                    # update streak of current depth
-                    streak_stack[-1] = valid_brack_length
+                if stack:
+                    # current valid bracket streak is current position - last position of unclosed bracket
+                    curr_streak = i - stack[-1]
+                    # update res if larger
+                    if curr_streak > res:
+                        res = curr_streak
                 else:
-                    # if there are no unclosed brackets, reset both stacks
-                    i_stack[0] = i + 1
-                    streak_stack[0] = 0
-
+                    # if there are no unclosed brackets, reset stack
+                    stack.append(i)
         return res
 
 
