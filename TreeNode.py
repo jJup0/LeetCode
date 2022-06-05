@@ -1,4 +1,6 @@
+import random
 from collections import deque
+from random import shuffle
 from typing import Any, List, Optional
 
 
@@ -69,6 +71,32 @@ class TreeNode:
                 break
         return str(l[:i+1])
 
+    def in_order_str(self) -> str:
+        def helper(root):
+            nonlocal sofar
+            if not root:
+                return
+            helper(root.left)
+            sofar.append(root.val)
+            helper(root.right)
+
+        sofar = []
+        helper(self)
+        return str(sofar)
+
+    def pre_order_str(self) -> str:
+        def helper(root):
+            nonlocal sofar
+            if not root:
+                return
+            sofar.append(root.val)
+            helper(root.left)
+            helper(root.right)
+
+        sofar = []
+        helper(self)
+        return str(sofar)
+
     def add_node(self, val: Any):
         if val < self.val:
             if self.left:
@@ -84,5 +112,7 @@ class TreeNode:
 
 if __name__ == "__main__":
     null = None
-    x = TreeNode.from_structure([5, 3, 6, 2, 4, null, null, 1])
-    print(x)
+    random.seed(1)
+    l = list(range(1, 20))
+    random.shuffle(l)
+    x = TreeNode.fromList(l)
