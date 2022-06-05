@@ -1,7 +1,7 @@
 import random
 from collections import deque
 from random import shuffle
-from typing import Any, List, Optional
+from typing import Any, Deque, List, Optional
 
 
 class TreeNode:
@@ -48,13 +48,13 @@ class TreeNode:
         return res
 
     def __init__(self, val: Any = 0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+        self.val: int = val
+        self.left: Optional[TreeNode] = left
+        self.right: Optional[TreeNode] = right
 
     def __repr__(self):
         l = []
-        node_stack = deque((self, ))
+        node_stack: Deque[Optional[TreeNode]] = deque([self])
         while node_stack:
             node = node_stack.popleft()
             if not node:
