@@ -3,6 +3,8 @@ from collections import deque
 from random import shuffle
 from typing import Any, Deque, List, Optional
 
+import pyperclip
+
 
 class TreeNode:
 
@@ -23,7 +25,7 @@ class TreeNode:
                 break
 
             left_val = val_queue.popleft()
-            if left_val:
+            if left_val != None:
                 node.left = TreeNode(left_val)
                 node_queue.append(node.left)
 
@@ -31,7 +33,7 @@ class TreeNode:
                 break
 
             right_val = val_queue.popleft()
-            if right_val:
+            if right_val != None:
                 node.right = TreeNode(right_val)
                 node_queue.append(node.right)
 
@@ -67,9 +69,15 @@ class TreeNode:
 
         i = 0   # to ignore unbound warning
         for i in range(len(l)-1, -1, -1):
-            if l[i]:
+            if l[i] != None:
                 break
-        return str(l[:i+1])
+        return str(l[:i+1]).replace("None", "null")
+
+    def __bool__(self):
+        return True
+
+    def pystr(self):
+        return str(self).replace("null", "None")
 
     def in_order_str(self) -> str:
         def helper(root):
@@ -112,7 +120,18 @@ class TreeNode:
 
 if __name__ == "__main__":
     null = None
-    random.seed(1)
-    l = list(range(1, 20))
+    random.seed(2)
+
+    l = list(range(1, 1000))
     random.shuffle(l)
     x = TreeNode.fromList(l)
+
+    # def zfill(root):
+    #     if not root:
+    #         return
+    #     root.val = 0
+    #     zfill(root.left)
+    #     zfill(root.right)
+    # zfill(x)
+    # s = str(x).replace("None", "null")
+    # pyperclip.copy(s)
