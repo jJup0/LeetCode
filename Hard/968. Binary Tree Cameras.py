@@ -19,7 +19,7 @@ class Solution:
         Node.val == 0
     """
 
-    def minCameraCover(self, root: Optional[TreeNode]) -> int:
+    def minCameraCover_ownDP(self, root: Optional[TreeNode]) -> int:
 
         # enums for camera cover of current node
         COVERERED, NOT_COVERED, MUST_GET_CAMERA = 0x00, 0x01, 0x11
@@ -69,3 +69,37 @@ class Solution:
 
         # start at root, which is not yet covered
         return helper(root, NOT_COVERED)
+
+    def minCameraCover(self, root: Optional[TreeNode]) -> int:
+        self.count = 0
+        # enums for camera necessity of a node
+        I_NEED_A_CAMERA = 0
+        DO_NOT_NEED = -1
+        I_AM_A_CAMERA = 1
+
+        # returns a camera necessity code
+        def resolve(node):
+            # empty children do not need a camera
+            if not node:
+                return DO_NOT_NEED
+            
+            # find camera needs of children
+            left = resolve(node.left)
+            right = resolve(node.right)
+            
+            # if either child needs a camera, this node has to be a camera
+            if left == I_NEED_A_CAMERA or right == I_NEED_A_CAMERA:
+                self.count += 1
+                return I_AM_A_CAMERA
+            # if either child is a camera, this node does not need one
+            elif left == I_AM_A_CAMERA or right == I_AM_A_CAMERA:
+                return DO_NOT_NEED
+            else:
+            # if node is not a camera, and neither is either child, it needs a camera
+                return I_NEED_A_CAMERA
+        
+        # if root needs a camera, parent node can not provide, so it needs to be a camera
+        if resolve(root) == I_NEED_A_CAMERA:
+            self.count += 1
+            
+        return self.count
