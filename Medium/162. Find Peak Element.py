@@ -50,4 +50,4 @@ class Solution:
                 return mid
 
         # constraint stating that numbers are unique means there must be a peak
-        assert False
+        assert(False)
