@@ -11,13 +11,19 @@ def int_couple_list(min_val, max_val, size):
 
         lines.append(str(l) + "\n")
 
+def int_list(min_val, max_val, size):
+    for _ in range(line_count):
+        l = []
+        for _ in range(size):
+            l.append(random.randint(min_val, max_val))
+
+        lines.append(str(l) + "\n")
 
 if __name__ == "__main__":
     lines = []
-    line_count = 10
-
-    int_couple_list(1, 999, 100)
+    line_count = 5
 
     s = ''.join(lines)
-    pyperclip.copy(s)
     print(s)
+    pyperclip.copy(s)
+    print("^ copied to clipboard")
