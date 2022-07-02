@@ -9,8 +9,8 @@ class Solution:
         m == matrix.length
         n == matrix[i].length
         1 <= m, n <= 1000
-        1 <= m * n <= 105
-        -109 <= matrix[i][j] <= 109
+        1 <= m * n <= 10^5
+        -10^9 <= matrix[i][j] <= 10^9
     """
 
     def transpose(self, matrix: List[List[int]]) -> List[List[int]]:

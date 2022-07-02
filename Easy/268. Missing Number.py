@@ -7,7 +7,7 @@ class Solution:
     in the range that is missing from the array.
     Constraints:
         n == nums.length
-        1 <= n <= 104
+        1 <= n <= 10^4
         0 <= nums[i] <= n
         All the numbers of nums are unique.
     """

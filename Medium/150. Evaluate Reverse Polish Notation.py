@@ -9,7 +9,7 @@ class Solution:
     It is guaranteed that the given RPN expression is always valid. That means the
     expression would always evaluate to a result, and there will not be any division by zero operation.
     Constraints:
-        1 <= tokens.length <= 104
+        1 <= tokens.length <= 10^4
         tokens[i] is either an operator: "+", "-", "*", or "/", or an integer in the range [-200, 200].
     """
 

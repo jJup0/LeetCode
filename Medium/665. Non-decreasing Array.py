@@ -10,7 +10,7 @@ class Solution:
     Constraints:
         n == nums.length
         1 <= n <= 10^4
-        -105 <= nums[i] <= 10^5
+        -10^5 <= nums[i] <= 10^5
     """
 
     def checkPossibility(self, nums: List[int]) -> bool:
