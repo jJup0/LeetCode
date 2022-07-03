@@ -47,7 +47,7 @@ if __name__ == "__main__":
     lines = []
     line_count = 50
     
-    two_rects()
+    int_list(1, 100, 20)
 
     s = ''.join(lines)
     print(s)
