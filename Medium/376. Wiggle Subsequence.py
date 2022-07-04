@@ -58,3 +58,31 @@ class Solution:
             prev = curr
 
         return res
+
+    def shorterSolution(self, nums: List[int]) -> int:
+        # result variable
+        res = 1
+
+        # flag = -1 if decreasing, 1 if increasing
+        # 0 if entire array so far has been filled with the same value
+        flag = 0
+
+        prev = nums[0]
+
+        for i in range(1,len(nums)):
+            curr = nums[i]
+            # make copy of previous flag
+            flag_pre = flag
+            
+            # make note of increasing/decreasing
+            if curr > prev:
+                flag = 1
+            elif curr < prev:
+                flag = -1
+            
+            # if flag is different to previous, add to res
+            res += flag != flag_pre
+            
+            prev = curr
+                
+        return res

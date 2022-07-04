@@ -47,7 +47,7 @@ if __name__ == "__main__":
     lines = []
     line_count = 50
     
-    int_list(1, 100, 20)
+    int_list(1, 5, 20)
 
     s = ''.join(lines)
     print(s)
