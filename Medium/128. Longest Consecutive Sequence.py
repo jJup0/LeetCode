@@ -11,7 +11,7 @@ class Solution:
         -10^9 <= nums[i] <= 10^9
     """
 
-    def longestConsecutive(self, nums: List[int]) -> int:
+    def firstVersionLongestConsecutive(self, nums: List[int]) -> int:
         # mapping from endpoints to current intervals
         endpoints = {}
 
@@ -56,3 +56,27 @@ class Solution:
 
         # calculate size of maximum interval, 0 if nums was empty
         return max(j - i for i, j in endpoints.values()) + 1 if endpoints else 0
+    
+    def longestConsecutive(self, nums: List[int]) -> int:
+        # result variable
+        longest_streak = 0
+        
+        # create set of nums in O(n)
+        num_set = set(nums)
+
+        for num in num_set:
+            # if num has a predecessor, skip
+            if num - 1 not in num_set:
+                # else num is the smallest number in a consecutive sequence
+                sequence_end = num + 1
+                
+                # find length of sequence starting with num, by checking if successors in set
+                while sequence_end in num_set:
+                    sequence_end += 1
+
+                # update result if longer
+                streak = sequence_end - num
+                if streak > longest_streak:
+                    longest_streak = streak
+
+        return longest_streak
