@@ -15,6 +15,9 @@ class Solution:
     """
 
     def minSetSize(self, arr: List[int]) -> int:
+        """
+        O(n * log(n)) / O(n)    time / space complexity
+        """
         # result variable
         res = 0
 
