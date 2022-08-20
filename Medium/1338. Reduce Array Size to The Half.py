@@ -9,9 +9,9 @@ class Solution:
     Return the minimum size of the set so that at least half of the integers of the array are
     removed.
     Constraints:
-        2 <= arr.length <= 105
+        2 <= arr.length <= 10^5
         arr.length is even.
-        1 <= arr[i] <= 105
+        1 <= arr[i] <= 10^5
     """
 
     def minSetSize(self, arr: List[int]) -> int:
