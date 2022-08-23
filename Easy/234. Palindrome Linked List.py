@@ -19,28 +19,25 @@ class Solution:
         """
         O(n) / O(1)     time / space complexity
         """
-        
-        # find middle using fast-slow method
+
+        # reverse first half of linked list, middle of list found using fast-slow method
+        rev = None
         slow = fast = head
         while fast and fast.next:
-            slow = slow.next
             fast = fast.next.next
+            # rev = slow;       prepares current node to be added to reversed list
+            # rev.next = rev;   actually does this
+            # slow = slow.next  simple iteration through list
+            rev, rev.next, slow = slow, rev, slow.next
 
-        # reverse linked list starting from middle node, stored in slow
-        prev = None
-        while slow.next:
-            nextNode = slow.next
-            slow.next = prev
-            prev = slow
-            slow = nextNode
-        slow.next = prev
-
-        # iterate through nodes from both ends of the linked list (head and slow)
-        dummy = head
-        while slow:
-            if dummy.val != slow.val:
-                return False
-            dummy = dummy.next
+        # if list length is uneven, skip to next node
+        if fast:
             slow = slow.next
 
+        # check if reversed first half of list is equal to second half of list
+        while rev:
+            if rev.val != slow.val:
+                return False
+            slow = slow.next
+            rev = rev.next
         return True
