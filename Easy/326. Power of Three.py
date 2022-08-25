@@ -10,7 +10,7 @@ class Solution:
     """
 
     def isPowerOfThree(self, n: int) -> bool:
-        return self.isPowerOfThree_log(n)
+        return self.isPowerOfThree_preCalcluated(n)
 
     def isPowerOfThree_loop(self, n: int) -> bool:
         # keep diving by three and checking remainder until factor of 1 is left
