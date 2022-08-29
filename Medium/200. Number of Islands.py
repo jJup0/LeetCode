@@ -7,6 +7,11 @@ class Solution:
     return the number of islands.
     An island is surrounded by water and is formed by connecting adjacent lands horizontally or
     vertically. You may assume all four edges of the grid are all surrounded by water.
+    Constraints:
+        m == grid.length
+        n == grid[i].length
+        1 <= m, n <= 300
+        grid[i][j] is '0' or '1'.
     """
 
     def numIslands(self, grid: List[List[str]]) -> int:
@@ -25,6 +30,7 @@ class Solution:
 
         # result variable
         island_count = 0
+
         # go through each cell checking if there is an unexplored piece of island
         for row in range(len(grid)):
             for col in range(len(grid[0])):
