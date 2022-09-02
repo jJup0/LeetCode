@@ -10,7 +10,7 @@ class Solution:
     greater than 2^31 - 1, then return 2^31 - 1, and if the quotient is strictly less than -2^31,
     then return -2^31.
     Constraints:
-        -231 <= dividend, divisor <= 231 - 1
+        -2^31 <= dividend, divisor <= 2^31 - 1
         divisor != 0
     """
 
