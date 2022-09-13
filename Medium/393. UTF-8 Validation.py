@@ -30,6 +30,9 @@ class Solution:
     """
 
     def validUtf8(self, data: List[int]) -> bool:
+        """
+        O(n) / O(1)     time / space complexity
+        """
         l = len(data)
 
         # bit masks for checking validity
