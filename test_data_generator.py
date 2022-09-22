@@ -37,23 +37,26 @@ def two_rects(lines):
         lines.append(str(rint(0, 10)))
         lines.append(str(rint(0, 10)))
 
+
 def digits_str(lines, size):
     lines.append('"' + ''.join(str(rint(0, 9)) for _ in range(size)) + '"')
+
 
 def similar_words_list(lines, line_count, word_count, max_word_len):
     for _ in range(line_count):
         l = []
         for _ in range(word_count):
-            l.append(''.join(chr(rint(ord('a'), ord('e'))) for _ in range(rint(0,max_word_len))))
+            l.append(''.join(chr(rint(ord('a'), ord('e'))) for _ in range(rint(0, max_word_len))))
         lines.append(str(l))
+
 
 if __name__ == "__main__":
     lines = []
 
-    LINE_COUNT = 2
-    SIZE = 4
+    LINE_COUNT = 10
+    SIZE = 200
     for _ in range(LINE_COUNT):
-        similar_words_list(lines, LINE_COUNT, SIZE, 5)
+        int_list(lines, 1, 20, SIZE)
 
     s = '\n'.join(lines).replace(" ", "").replace("'", '"')
     print(s)
