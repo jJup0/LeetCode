@@ -1,64 +1,83 @@
-import random
+from random import randint as rint
 
 import pyperclip
 
-rint = random.randint
+
+class TestData:
+    
+    def __init__(self, test_cases, count=10):
+        self.test_cases = test_cases
+        self.case_count = count
+    
+    def clear_test_cases(self):
+        self.test_cases.clear()
+
+    def set_test_case_count(self, count):
+        self.case_count = count
 
 
-def int_couple_list(lines, min_val, max_val, size):
-    l = []
-    for _ in range(size):
-        l.append([random.randint(min_val, max_val), random.randint(min_val, max_val)])
-
-    lines.append(str(l))
-
-
-def int_list(lines, min_val, max_val, size):
-    l = []
-    for _ in range(size):
-        l.append(random.randint(min_val, max_val))
-
-    lines.append(str(l))
-
-
-def almost_non_decreasing_int_list(lines, size):
-    l = list(range(size))
-
-    for _ in range(random.randint(0, 3)):
-        l[random.randint(0, size-1)] = random.randint(0, size)
-
-    lines.append(str(l))
-
-
-def two_rects(lines):
-    for _ in range(2):
-        lines.append(str(rint(-10, 0)))
-        lines.append(str(rint(-10, 0)))
-        lines.append(str(rint(0, 10)))
-        lines.append(str(rint(0, 10)))
-
-
-def digits_str(lines, size):
-    lines.append('"' + ''.join(str(rint(0, 9)) for _ in range(size)) + '"')
-
-
-def similar_words_list(lines, line_count, word_count, max_word_len):
-    for _ in range(line_count):
+    def int_couple_list(self, min_val, max_val, size):
         l = []
-        for _ in range(word_count):
-            l.append(''.join(chr(rint(ord('a'), ord('e'))) for _ in range(rint(0, max_word_len))))
-        lines.append(str(l))
+        for _ in range(size):
+            l.append([rint(min_val, max_val), rint(min_val, max_val)])
 
+        self.test_cases.append(str(l))
+
+
+    def int_list(self, min_val, max_val, size):
+        l = []
+        for _ in range(size):
+            l.append(rint(min_val, max_val))
+
+        self.test_cases.append(str(l))
+
+
+    def almost_non_decreasing_int_list(self, size):
+        l = list(range(size))
+
+        for _ in range(rint(0, 3)):
+            l[rint(0, size-1)] = rint(0, size)
+
+        self.test_cases.append(str(l))
+
+
+    def two_rects(self):
+        for _ in range(2):
+            self.test_cases.append(str(rint(-10, 0)))
+            self.test_cases.append(str(rint(-10, 0)))
+            self.test_cases.append(str(rint(0, 10)))
+            self.test_cases.append(str(rint(0, 10)))
+
+
+    def digits_str(self, size):
+        self.test_cases.append('"' + ''.join(str(rint(0, 9)) for _ in range(size)) + '"')
+
+
+    def similar_words_list(self, line_count, word_count, max_word_len):
+        for _ in range(line_count):
+            l = []
+            for _ in range(word_count):
+                l.append(''.join(chr(rint(ord('a'), ord('e'))) for _ in range(rint(0, max_word_len))))
+            self.test_cases.append(str(l))
+
+    def skyline_list(self, min_l, max_l, min_w, max_w, min_h, max_h, size):
+        l = []
+        for _ in range(size):
+            left = rint(min_l, max_l)
+            right = left + rint(min_w, max_w)
+            height = rint(min_h, max_h)
+            l.append([left, right, height])
+        l.sort()
+        self.test_cases.append(str(l))
 
 if __name__ == "__main__":
-    lines = []
+    test_cases = []
+    t = TestData(test_cases, 10)
+    SIZE = 10
+    for _ in range(t.case_count):
+        t.skyline_list(1, 200, 1, 200, 1, 20, SIZE)
 
-    LINE_COUNT = 10
-    SIZE = 200
-    for _ in range(LINE_COUNT):
-        int_list(lines, 1, 20, SIZE)
-
-    s = '\n'.join(lines).replace(" ", "").replace("'", '"')
-    print(s)
+    s = '\n'.join(test_cases).replace(" ", "").replace("'", '"')
     pyperclip.copy(s)
+    print(s)
     print("^ copied to clipboard")
