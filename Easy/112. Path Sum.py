@@ -29,9 +29,7 @@ class Solution:
         targetSum -= root.val
 
         # if either path down the left or right child sums up to targetSum, then return True
-        if self.hasPathSum(root.left, targetSum) or self.hasPathSum(root.right, targetSum):
-            return True
-
-        # otherwise if this node is a leaf node and the target sum has been reached return true,
-        # else false
-        return (not(root.left or root.right)) and (targetSum == 0)
+        # else if this node is a leaf node and the target sum has been reached return true,
+        # else return false
+        return self.hasPathSum(root.left, targetSum) or self.hasPathSum(root.right, targetSum) or \
+            ((not(root.left or root.right)) and (targetSum == 0))
