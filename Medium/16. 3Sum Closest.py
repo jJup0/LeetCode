@@ -1,84 +1,63 @@
-def prevthreeSumClosest(self, nums: [int], target: int):
-    nums.sort()
-    pos_set = set()
-    neg_set = set()
-    i = 0
-    while i < len(nums):
-        if nums[i] < 0:
-            neg_set.add(nums[i])
-        else:
-            for j in range(i, len(nums)):
-                pos_set.add(nums[j])
-            break
-        i += 1
-    print(pos_set, neg_set)
-    smallest_Diff_i = (2 >> 31, None)
-    prevDiff = 2 >> 31
-
-    for i, val in enumerate(nums):
-        curDiff = abs(target - val)
-        if curDiff < smallest_Diff_i[0]:
-            smallest_Diff_i = (curDiff, i)
-        elif prevDiff < curDiff:
-            break
-        prevDiff = curDiff
-
-
-def pileOfShitThreeSumClosest(self, nums: [int], target: int):
-    nums.sort()
-    nums = tuple(nums)
-    lenNums = len(nums)
-    seen = set()
-    best_diff = 2 << 31
-    for i in range(lenNums - 2):
-        print('new i')
-        for j in range(i, lenNums - 1):
-            diff = target - nums[i] - nums[j]
-            if diff in seen:
-                continue
-            seen.add(diff)
-            l_b_diff = 2 << 31  # best
-            l_pre_diff = 2 << 31  # previous
-            for x in range(3):
-                if x == 0:
-                    i1, j1 = 0, i
-                elif x == 1:
-                    i1, j1 = i + 1, j
-                elif x == 2:
-                    i1, j1 = j + 1, lenNums
-                for k in range(i1, j1):
-                    l_cur_diff = diff + nums[k]
-                    if abs(l_cur_diff) > abs(l_pre_diff):
-                        break
-                    if abs(l_cur_diff) < l_b_diff:
-                        l_b_diff = l_cur_diff
-                    l_pre_diff = l_cur_diff
-            if abs(l_b_diff) < abs(best_diff):
-                best_diff = l_b_diff
-
-    return best_diff
+from typing import List
 
 
 class Solution:
-    def threeSumClosest(self, nums: [int], target: int) -> int:
+    """
+    Given an integer array nums of length n and an integer target, find three integers in nums such
+    that the sum is closest to target.
+    Return the sum of the three integers.
+    You may assume that each input would have exactly one solution.
+
+    Constraints:
+        3 <= nums.length <= 1000
+        -1000 <= nums[i] <= 1000
+        -10^4 <= target <= 10^4
+    """
+
+    def threeSumClosest(self, nums: List[int], target: int) -> int:
         nums.sort()
-        numsLen = len(nums)
-        closest = []
-        for i in range(0, len(nums) - 2):
-            l, r = i+1, numsLen-1
-            if nums[i] + nums[r] + nums[r-1] < target:  # if current value plus two biggest values is smaller than target, append
-                closest.append(nums[i]+nums[r]+nums[r-1])
-            elif nums[i]+nums[l]+nums[l+1] > target:  # if current value plus next two is bigger than target append
-                closest.append(nums[i]+nums[l]+nums[l+1])
-            else:
-                while l < r:  # zero in from both sides to get closer to target
-                    mysum = nums[i]+nums[l]+nums[r]
-                    closest.append(mysum)
-                    if mysum < target:
-                        l += 1
-                    elif mysum > target:
-                        r -= 1
-                    else:
-                        return target
-        closest.sort(key=lambda x: abs(x-target))  # sort closest[] according to the distance from target
-        return closest[0]
+        N = len(nums)
+        LARGEST = nums[-1] + nums[-2]
+
+        self.res = -1
+        self.res_diff = 100_000
+
+        def update_res(diff, candidate):
+            if diff < self.res_diff:
+                self.res_diff = diff
+                self.res = candidate
+
+        for i in range(N - 2):
+            curr_num = nums[i]
+
+            # if largest sum possible including nums[i] is smaller than target, update res
+            triple_sum = curr_num + LARGEST
+            if triple_sum <= target:
+                update_res(target - triple_sum, triple_sum)
+                continue
+
+            # check if sum(nums[i:i+2]) is bigger than target, if yes update res and break
+            # since there can be no smaller sum
+            triple_sum = curr_num + nums[i+1] + nums[i+2]
+            if triple_sum >= target:
+                update_res(triple_sum - target, triple_sum)
+                break
+
+            # zero in from both sides to get closer to target
+            l = i + 1
+            r = N - 1
+            while l < r:
+                triple_sum = curr_num + nums[l] + nums[r]
+                if triple_sum < target:
+                    # if sum is too small, take a bigger number for triple sum
+                    l += 1
+                elif triple_sum > target:
+                    # if sum is too big, take a smaller number for triple sum
+                    r -= 1
+                else:
+                    # if target reached, return
+                    return triple_sum
+
+            update_res(abs(triple_sum - target), triple_sum)
+
+        return self.res
