@@ -26,7 +26,7 @@ class Solution:
         """
         O(n) / O(1)     time / space complexity
         """
-        
+
         # if only one node, delete that node
         if not head.next:
             return None
