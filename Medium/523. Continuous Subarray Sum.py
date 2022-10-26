@@ -8,7 +8,7 @@ class Solution:
 
     An integer x is a multiple of k if there exists an integer n such that x = n * k. 0 is always a
     multiple of k.
-    
+
     Constraints:
         1 <= nums.length <= 10^5
         0 <= nums[i] <= 10^9
@@ -22,32 +22,24 @@ class Solution:
         subarray with a summing to a multiple of k will be nums[i+1:j+1]
         O(n) / O(n)     time / space complexity
         """
-        # current running sum modulo k
-        curr_sum = 0
+        # set first seen of running sum 0 to 0, since if the running sum ever comes to zero after
+        # the first index, then sum(nums[:i+1]) is a multiple of k
+        first_seen = {0: 0}
 
-        # set of running sums
-        running_sums_set = set([0])
+        # running sum of nums[:i+1] modulo k
+        running_sum = 0
+        for i, num in enumerate(nums):
+            running_sum = (num + running_sum) % k
 
-        # previous number in nums, only important if zero or not
-        prev = -1
-        for num in nums:
-            # take modulo if num, important if num is multiple of k
-            num %= k
-            # add num to the running sum
-            curr_sum = (curr_sum + num) % k
+            # if current running sum has never been seen before, update first seen to NEXT index,
+            # to avoid wrong truthy return value in case next value is a multiple of k
+            if running_sum not in first_seen:
+                first_seen[running_sum] = i + 1
 
-            # if num is not a multiple of k, otherwise subarray "identified" would have length 1
-            if num:
-                # if it has been seen in running sums so far, return true
-                if (curr_sum in running_sums_set):
-                    return True
-                # else add if to the set
-                running_sums_set.add(curr_sum)
-            elif not prev:
-                # if the previous number was also a multiple of k, then the subarray is nums[i-1:i+1]
+            # else if the running sum has been encountered, and it was not at the previous index
+            # (can only happen if num%k == 0) return True
+            elif first_seen[running_sum] < i:
                 return True
 
-            prev = num
-
-        # if no duplicate entries in running sum, return false
+        # no duplicate running sum found, return false
         return False
