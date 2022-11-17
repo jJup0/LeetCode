@@ -16,11 +16,13 @@ class Solution:
         area2 = (bx2 - bx1) * (by2-by1)
 
         # calculate coordinates for overlap rectangle
-        # starting coordinates are left-most, lower-most coordinates shared by both rectangles, so take max
+        # "starting" coordinates are left-most, lower-most coordinates shared by both rectangles,
+        # so take max
         cx1 = max(ax1, bx1)
         cy1 = max(ay1, by1)
 
-        # starting coordinates are right-most, upper-most coordinates shared by both rectangles, so take min
+        # "ending" coordinates are right-most, upper-most coordinates shared by both rectangles,
+        # so take min
         cx2 = min(ax2, bx2)
         cy2 = min(ay2, by2)
 
