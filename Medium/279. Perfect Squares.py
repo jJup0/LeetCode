@@ -2,9 +2,41 @@ from math import sqrt
 
 
 class Solution:
-
     def numSquares(self, n: int) -> int:
-        # top down idea stolen and optimized with reversed tuple and more importantly set
+        """
+        BFS approach
+        O(n * sqrt(n)) / O(n)   time / space complexity
+        """
+        squares = tuple(i*i for i in range(1, int(sqrt(n)) + 1))
+
+        # list of all values reachable with sum of _count_ perfect-squares
+        values_reached = set((0,))
+        for count in range(1, 5):  # Lagrange's four-square theorem states max is 4
+            # list of all values reachable with sum of _count_+1 perfect-squares
+            next_values_reached = set()
+
+            # iterate through all values reachable with _count_-1 perfect squares
+            for val in values_reached:
+                # get all reachable values from val by adding a perfect square
+                for square in squares:
+                    new_val = val + square
+
+                    # if that square is the target, return
+                    if new_val == n:
+                        return count
+                    # if it is bigger than break, because values in squares are ascending
+                    if new_val > n:
+                        break
+
+                    # add to next batch of values
+                    next_values_reached.add(new_val)
+
+            values_reached = next_values_reached
+        
+        assert(False)
+
+    def numSquaresStolen(self, n: int) -> int:
+        # bfs but with top down approach and 1 less level to check
 
         def is_divided(num, count):
             if count == 1:
@@ -22,32 +54,14 @@ class Solution:
         for count in range(1, 5):       # Lagrange's four-square theorem states max is 4
             if is_divided(n, count):
                 return count
-
-    def numSquaresOwn(self, n: int) -> int:
-        squares = tuple(i*i for i in range(1, int(sqrt(n)) + 1))
-
-        starts = [0]
-        for count in range(1, 5):  # bfs, Lagrange's four-square theorem states max is 4
-            idx = 0
-            newStarts = []
-            # newStarts = [-1]*len(starts) * len(squares) || reserves too much memory I guess, not all is used
-            for start in starts:
-                # if start == -1:
-                #     break
-                for square in squares:
-                    val = start + square
-
-                    if val == n:
-                        return count
-                    if val > n:
-                        break
-
-                    newStarts.append(val)
-                    # newStarts[idx] = val
-                    # idx += 1
-            starts = newStarts
+        
+        assert(False)
 
     def numSquaresMathematical(self, n: int) -> int:
+        """
+        Mathematically optimal, Lagranges four square theorem applied
+        """
+
         def isSquare(n): return (int(sqrt(n)) ** 2) == n
 
         if isSquare(n):     # if perfect square then return 1
