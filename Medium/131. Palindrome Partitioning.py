@@ -1,15 +1,49 @@
-from typing import List
+from collections import defaultdict
+
+
 class Solution:
-    def partition(self, s: str) -> List[List[str]]:
-        n = len(s)
-        dp = [[False] * n for i in range(n)]    #dp[i,j] = str[i,j] is palindrome 
-        res = [[] for i in range(n)]            #perms up until each char
-        for i in range(n):
-            for j in range(i+1):
-                # if two chars are equal, and they are next to each other or text between them is a palindrom or 
-                if s[i] == s[j] and (i - j <= 2 or dp[j+1][i-1]):
-                    dp[j][i] = True     #s[i:j] is palindrome
-                    substr = s[j:i+1]   #make copy of current palimdrome substring
-                    prevs = res[j-1] if j > 0 else [[]]   #store "previous" combinations in temp variable 
-                    res[i].extend(l + [substr] for l in prevs)      #create all new possibles for i
-        return res[-1]   
+    """
+    Given a string s, partition s such that every substring of the partition is a palindrome.
+    Return all possible palindrome partitioning of s.
+
+    Constraints:
+        1 <= s.length <= 16
+        s contains only lowercase English letters.
+    """
+
+    def partition(self, s: str) -> list[list[str]]:
+        # result variable
+        palindrome_partitions = []
+
+        len_s = len(s)
+
+        # memoization for substring palindromes
+        is_palindrome_memo = {}
+
+        # appends palindrome partitions to res
+        def dfs(i: int, current_partition: list[str]):
+            # if end of string reached, add current partition
+            if i == len_s:
+                palindrome_partitions.append(current_partition.copy())
+                return
+
+            for j in range(i + 1, len_s + 1):
+                # check all substrings s[i:j]
+                substring = s[i:j]
+
+                # unique value representing s[i:j]
+                substring_id = i * len_s + j
+
+                # use memoization for checking if subtring is a palindrome
+                if substring_id not in is_palindrome_memo:
+                    is_palindrome_memo[substring_id] = substring == substring[::-1]
+
+                # if the substring is a palindrome, continue dfs
+                if is_palindrome_memo[substring_id]:
+                    # append substring, and pop after dfs
+                    current_partition.append(substring)
+                    dfs(j, current_partition)
+                    current_partition.pop()
+
+        dfs(0, [])
+        return palindrome_partitions
