@@ -1,6 +1,3 @@
-from typing import List
-
-
 class Solution:
     """
     A valid IP address consists of exactly four integers separated by single dots. Each integer
@@ -10,12 +7,13 @@ class Solution:
     Given a string s containing only digits, return all possible valid IP addresses that can be formed by
     inserting dots into s. You are not allowed to reorder or remove any digits in s. You may return the valid
     IP addresses in any order.
+
     Constraints:
         1 <= s.length <= 20
         s consists of digits only.
     """
 
-    def restoreIpAddresses(self, s: str) -> List[str]:
+    def restoreIpAddresses(self, s: str) -> list[str]:
         # make a copy of length of s, will not change
         n = len(s)
 
@@ -34,7 +32,7 @@ class Solution:
             # if index for s out of bounds, or too many digits left to place in IP address return
             elif (i >= n) or (n-i > 3 * (4 - len(prev_nums))):
                 return
-            # if the next digit to add to IP address starts with 0, keep building only with 0,
+            # if the next digit to add to IP address starts with 0, keep building with only one 0,
             # as leading zeroes are not allowed
             elif s[i] == "0":
                 prev_nums.append("0")
@@ -55,42 +53,4 @@ class Solution:
 
         # call helper with index 0, and prev_nums empty
         helper(0, [])
-        return res
-
-    def restoreIpAddressesAlternateJoin(self, s: str) -> List[str]:
-        n = len(s)
-
-        point_posititions = []
-
-        def helper(i, prev_nums):
-            if len(prev_nums) == 4:
-                if i == n:
-                    point_posititions.append(prev_nums)
-            elif (i >= n) or (n-i-1 > 3 * (4 - len(prev_nums))):
-                return
-            elif s[i] == "0":
-                helper(i + 1, prev_nums + [i])
-            else:
-                val = 0
-                for j in range(3):
-                    if i + j >= n:
-                        break
-                    val = val * 10 + int(s[i + j])
-                    if val < 256:
-                        helper(i + j + 1, prev_nums + [i+j])
-
-        helper(0, [])
-
-        res = []
-        s_char = [''] * (2 * n)
-        for i, digit in enumerate(s):
-            s_char[2*i] = digit
-
-        for points in point_posititions:
-            for point in points[:-1]:
-                s_char[2*point + 1] = '.'
-            res.append(''.join(s_char))
-            for point in points[:-1]:
-                s_char[2*point + 1] = ''
-
         return res
