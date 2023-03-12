@@ -1,45 +1,55 @@
-from heapq import heapify, heappop, heappush
-from typing import List, Optional
-
+import heapq
+from typing import Optional
 
 # Definition for singly-linked list.
-class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
 
 
 class Solution:
+    """
+    You are given an array of k linked-lists lists, each linked-list is sorted in ascending order.
 
-    # make ListNode sortable
+    Merge all the linked-lists into one sorted linked-list and return it.
+
+    Constraints:
+        k == lists.length
+        0 <= k <= 10^4
+        0 <= lists[i].length <= 500
+        -10^4 <= lists[i][j] <= 10^4
+        lists[i] is sorted in ascending order.
+        The sum of lists[i].length will not exceed 10^4.
+    """
+
+    # monkey patch non existent __lt__ function, to make sortable in heap
     def __init__(self):
         setattr(ListNode, '__lt__', lambda x, y: x.val < y.val)
 
-    # O(k) memory
-    # O(n * log(k)) time
-    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
-        # create a dummy node to return from
-        dummy = curr = ListNode()
+    def mergeKLists(self, lists: list[Optional[ListNode]]) -> Optional[ListNode]:
+        """
+        Maintain min_heap of current smallest nodes of each list which has not been sorted in yet.
+        O(total_nodes * log(k)) / O(k)    time / space complexity
+        """
 
-        # create a heap of all the contained lists that are not None, in O(k) time,
-        # using O(k) space for the list, and then for the heap
-        heap = list(node for node in lists if node)
-        heapify(heap)
+        # build a min-heap for all the heads of the linked lists
+        next_candidates = [head for head in lists if head]
+        heapq.heapify(next_candidates)
 
-        # O(n * log(k)) time for n-k items to be pushed and n items to be popped, both operations in O(k) time
-        while heap:
-            # as long as there are nodes in the heap, pop one (smallest value in the heap)
-            node = heappop(heap)
+        # create a dummy head pointer, and maintain a pointer to the current tail of the merged list
+        res_dummy = res_tail = ListNode()
 
-            # set that node as the next node, update curr
-            # curr.next will always be overwritten from the previous node, and the last node added will
-            # be the last node of one of the lists, so it will have None as its next node
-            curr.next = node
-            curr = curr.next
+        while next_candidates:
+            # get the current smallest candidate
+            smallest_node = heapq.heappop(next_candidates)
 
-            # if the popped node has a next node, add it to the heap
-            if node.next:
-                heappush(heap, node.next)
+            # add it to the end of the merged list and update tail pointer
+            res_tail.next = smallest_node
+            res_tail = res_tail.next
 
-        # return from dummy
-        return dummy.next
+            # add the successor of the smallest_node (if it exists) to the min heap of candidates
+            if smallest_node.next:
+                heapq.heappush(next_candidates, smallest_node.next)
+
+        return res_dummy.next
