@@ -1,28 +1,33 @@
-from typing import List
 class Solution:
-    # greedy solution: heaviest people need to be on a boat, if lightest person not yet on boat can 
-    # fit, put them on, otherwise heaviest has to be alone
-    def numRescueBoats(self, people: List[int], limit: int) -> int:
+    """
+    You are given an array people where people[i] is the weight of the ith person,
+    and an infinite number of boats where each boat can carry a maximum weight of
+    limit. Each boat carries at most two people at the same time, provided the sum
+    of the weight of those people is at most limit.
+
+    Return the minimum number of boats to carry every given person.
+
+    Constraints:
+        1 <= people.length <= 5 * 10^4
+        1 <= people[i] <= limit <= 3 * 10^4
+    """
+
+    def numRescueBoats(self, people: list[int], limit: int) -> int:
+        """Greedily match heaviest people with lightest people.
+        O(n)/ O(n)      time / space complexity
+        """
         people.sort()
-        
-        # j index of heaviest person not yet on a boat
-        j = len(people) - 1
-        
-        # enumerate through lightest people on the boat
-        for i, lighter in enumerate(people):
-            # calculate space left on boat if lightest person gets on
-            space_left = limit - lighter
-            
-            # send all people who are too heavy to fit with lightest person by themselves 
-            while j > i and people[j] > space_left:
-                j -= 1
-            
-            # if all people have been sent on boat break
-            if j <= i:
-                break
-            
-            # people[j] fits on boat with lightest, so send them as a pair and get next heaviest person
-            j -= 1
-        
-        # amount of boats needed is total amount of people minus light people who paired up with heavy person
-        return len(people) - i
+        boats = 0
+        # indices of lightest and heaviest person not yet on a boat
+        lightest_person_idx = 0
+        heaviest_person_idx = len(people) - 1
+        while lightest_person_idx <= heaviest_person_idx:
+            # if lightest person can fit with heaviest person,
+            # then place them both in the same boat
+            if people[heaviest_person_idx] + people[lightest_person_idx] <= limit:
+                lightest_person_idx += 1
+            # heaviest person always goes on the boat
+            heaviest_person_idx -= 1
+            boats += 1
+
+        return boats
