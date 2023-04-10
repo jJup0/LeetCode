@@ -1,24 +1,42 @@
 class Solution:
+    """
+    Given a string s containing just the characters '(', ')', '{', '}', '[' and ']',
+    determine if the input string is valid.
+
+    An input string is valid if:
+        Open brackets must be closed by the same type of brackets.
+        Open brackets must be closed in the correct order.
+        Every close bracket has a corresponding open bracket of the same type.
+
+    Constraints:
+        1 <= s.length <= 10^4
+        s consists of parentheses only '()[]{}'.
+    """
+
     def isValid(self, s: str) -> bool:
-        # keeps a stack of open brackets
-        bracket_stack = [' ']
-        # opening bracket to closing bracket map
-        open_to_close = {
-            '(': ')',
-            '[': ']',
-            '{': '}',
-            ' ': None
-        }
+        """
+        Iterates through string keeping stack of open parentheses.
+        O(n) / O(n)     time / space complexity
+        """
 
-        for c in s:
-            # opening brackets always allowed, append to stack
-            if c in open_to_close:  # currently opening
-                bracket_stack.append(c)
-            # if closing bracket, check if its closing the last open bracket
-            # if not return false
-            elif c != open_to_close[bracket_stack.pop()]:
-                return False
+        # stack of open parentheses
+        stack = []
 
-        # if stack == [' '] at the end, then return true
-        # otherwise still unclosed brackets and return false
-        return len(bracket_stack) == 1
+        # strings containing opening and closing parentheses
+        opening = "([{"
+        closing = ")]}"
+        for parenthesis in s:
+            if parenthesis in opening:
+                stack.append(parenthesis)
+            else:
+                # if stack is empty and parenthesis is closing, then sequence is not valid
+                if not stack:
+                    return False
+                opening_parenthesis = stack.pop()
+                # if closing parenthesis does not match most recent
+                # unclosed parenthesis then sequence is not valid
+                if opening.index(opening_parenthesis) != closing.index(parenthesis):
+                    return False
+
+        # all open parentheses must be closed
+        return len(stack) == 0
