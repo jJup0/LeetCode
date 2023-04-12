@@ -1,36 +1,46 @@
 class Solution:
+    """
+    Given a string path, which is an absolute path (starting with a slash '/') to a
+    file or directory in a Unix-style file system, convert it to the simplified
+    canonical path.
+
+    In a Unix-style file system, a period '.' refers to the current directory, a
+    double period '..' refers to the directory up a level, and any multiple consecutive
+    slashes (i.e. '//') are treated as a single slash '/'. For this problem, any other
+     format of periods such as '...' are treated as file/directory names.
+
+    The canonical path should have the following format:
+        The path starts with a single slash '/'.
+        Any two directories are separated by a single slash '/'.
+        The path does not end with a trailing '/'.
+        The path only contains the directories on the path from the root directory to the target file or directory (i.e., no period '.' or double period '..')
+
+    Return the simplified canonical path.
+
+    Constraints:
+        1 <= path.length <= 3000
+        path consists of English letters, digits, period '.', slash '/' or '_'.
+        path is a valid absolute Unix path.
+    """
+
     def simplifyPath(self, path: str) -> str:
-        path_str_size = len(path)
-        i = 0
-        # stack of current directory traversal
-        curr_directory_stack = []
-        while i < path_str_size:
-
-            # find next directory
-            while i < path_str_size:
-                if path[i] == '/':
-                    i += 1
-                else:
-                    break
-            else:
-                break
-
-            # directory name goes until next '/'
-            new_i = path.find("/", i)
-            if new_i == -1:
-                new_i = path_str_size
-
-            directory = path[i:new_i]
-            if directory == ".":
-                # . does nothing
-                pass
+        """
+        Simple Stack implementation.
+        O(n) / O(n)     time / space complexity
+        """
+        # stack of current directories
+        stack = []
+        for directory in path.split("/"):
+            if directory == "" or directory == ".":
+                # starting "/", multiple slashes "///" and single dots "."
+                # do not not change the current directory
+                continue
             elif directory == "..":
-                # check if not currently in root folder, else remove one directory from stack
-                if curr_directory_stack:
-                    curr_directory_stack.pop()
+                # double dots refers to parent directory, so pop from stack
+                if stack:
+                    stack.pop()
             else:
-                curr_directory_stack.append(directory)
+                # other wise normal directory, add to stack
+                stack.append(directory)
 
-            i = new_i + 1
-
-        return "/" + '/'.join(curr_directory_stack)
+        return "/" + "/".join(stack)
