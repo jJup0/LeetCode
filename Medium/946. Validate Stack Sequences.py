@@ -1,29 +1,39 @@
-from typing import List
-
-
 class Solution:
-    # constraint: popped is permutation of pushed
-    def validateStackSequences(self, pushed: List[int], popped: List[int]) -> bool:
+    """
+    Given two integer arrays pushed and popped each with distinct values, return
+    true if this could have been the result of a sequence of push and pop operations
+    on an initially empty stack, or false otherwise.
 
-        i_pop = i_push = 0
-        # constraint: 0 <= pushed[i] <= 1000, -1 acts as dummy entry when check top of stack for equality
-        stack = [-1]
-        for i_pop in range(len(popped)):
+    Constraints:
+        1 <= pushed.length <= 1000
+        0 <= pushed[i] <= 1000
+        All the elements of pushed are unique.
+        popped.length == pushed.length
+        popped is a permutation of pushed.
+    """
 
-            to_pop = popped[i_pop]
-            # push items onto stack until top of stack is equal to item to pop
-            while i_push < len(pushed) and stack[-1] != to_pop:
-                stack.append(pushed[i_push])
-                i_push += 1
+    def validateStackSequences(self, pushed: list[int], popped: list[int]) -> bool:
+        """
+        Check validity by simulating stack.
+        O(n) / O(n)     time / space complexity
+        """
+        # current state of the stack
+        stack = []
 
-            # check again if top of stack is equal
-            if stack[-1] == to_pop:
-                stack.pop()
-            else:
-                # else pushed entries have been exhausted and return false
-                # assert i_push == len(pushed)
-                return False
+        # iterator over push items
+        push_iter = iter(pushed)
+        for pop_item in popped:
+            # while the stack is empty, or the last item
+            # does not match, push the next item
+            while not stack or stack[-1] != pop_item:
+                push_val = next(push_iter, None)
+                # if the iterator is exhausted, then the sequence is invalid
+                if push_val is None:
+                    return False
 
-        # popped list exhausted meaning pushed and popped represent stack sequence
-        # assert stack == [-1]
+                stack.append(push_val)
+            # last item on the stack matches up with pop_item, so pop from the stack
+            stack.pop()
+
+        # if every pop item has been matched, return true
         return True
