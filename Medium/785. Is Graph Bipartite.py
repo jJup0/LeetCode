@@ -1,46 +1,65 @@
-from typing import List
+from typing import Literal
 
 
 class Solution:
-    def isBipartite(self, graph: List[List[int]]) -> bool:
-        # Enums for deciding whether a node is in a left/right side of a bipartite graph, or not yet decided
-        # LEFT = -1, RIGHT = 1 here, but any non-zero integer and its negative counterpart works
-        UNDECIDED = 0
+    """
+    There is an undirected graph with n nodes, where each node is numbered between
+    0 and n - 1. You are given a 2D array graph, where graph[u] is an array of nodes
+    that node u is adjacent to. More formally, for each v in graph[u], there is an
+    undirected edge between node u and node v. The graph has the following properties:
 
-        # constant length list to track which side of a bipartite graph a node is on
-        side_of_node = [UNDECIDED] * len(graph)
+      - There are no self-edges (graph[u] does not contain u).
+      - There are no parallel edges (graph[u] does not contain duplicate values).
+      - If v is in graph[u], then u is in graph[v] (the graph is undirected).
+      - The graph may not be connected, meaning there may be two nodes u and v
+          such that there is no path between them.
 
-        # track how many nodes are undecided, needed in case graph is not connected
-        nodes_left = set(range(len(graph)))
+    A graph is bipartite if the nodes can be partitioned into two independent sets A and B such that every edge in the graph connects a node in set A and a node in set B.
 
-        # stack of nodes and which side they have to be on
-        node_stack: List[int] = []
+    Return true if and only if it is bipartite.
 
-        while nodes_left:
-            # if there are nodes left, but the node stack is empty, it is either the first iteration,
-            # or the graph is not connected, so add an unvisited node to the stack
-            new_node = nodes_left.pop()
-            node_stack.append(new_node)
-            side_of_node[new_node] = -1
+    Constraints:
+        graph.length == n
+        1 <= n <= 100
+        0 <= graph[u].length < n
+        0 <= graph[u][i] <= n - 1
+        graph[u] does not contain u.
+        All the values of graph[u] are unique.
+        If graph[u] contains v, then graph[v] contains u.
+    """
 
-            # iterate through nodes of connected graph
-            while node_stack:
-                # get any node from the stack, it has determined side
-                node = node_stack.pop()
+    def isBipartite(self, graph: list[list[int]]) -> bool:
+        """
+        O(n + m) / O(n)     time / space complexity
+        """
 
-                # precalculate "opposite" side of current node, all its neighbors will get assigned this side
-                # or have to already have it assigned for the graph to be bipartite
-                assert side_of_node[node] != UNDECIDED
-                opposite = -side_of_node[node]
-
-                # loop through the node's neighbors, assigning them each the side "opposite"
-                for adjacent in graph[node]:
-                    neighbor_side = side_of_node[adjacent]
-                    if neighbor_side == UNDECIDED:
-                        # if undecided, assign neighbor opposite side, and append it to node stack
-                        side_of_node[adjacent] = opposite
-                        node_stack.append(adjacent)
-                        nodes_left.remove(adjacent)
-                    elif neighbor_side != opposite:
+        def dfs(node: int, set_value: Literal[-1] | Literal[1]):
+            """DFS traverses through neighbors, partitioning them.
+            Returns true if bipartite was partitioning successful, false otherwise.
+            """
+            nonlocal graph
+            # if node is unvisited, set its value, and dfs to neighbors
+            if partition_of_node[node] == 0:
+                partition_of_node[node] = set_value
+                for neighbor in graph[node]:
+                    partitionable = dfs(neighbor, -set_value)
+                    if not partitionable:
                         return False
+            elif partition_of_node[node] != set_value:
+                # if not is visited, but there is a discrepency between expected and
+                # actual partition, bipartite partitioning not possible, return false
+                return False
+
+            return True
+
+        n = len(graph)
+        # -1 <= partition_of_node[i] <= 1. -1 == "left", 0 == unpartitioned/unvisited, 1 == "right"
+        partition_of_node = [0] * n
+
+        # loop through all nodes, and start dfs if node has not been partitioned
+        for node in range(n):
+            if partition_of_node[node] == 0:
+                partitionable = dfs(node, 1)
+                if not partitionable:
+                    return False
         return True
