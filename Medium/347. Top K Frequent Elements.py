@@ -7,7 +7,8 @@ from typing import List
 
 class Solution:
     """
-    Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order.
+    Given an integer array nums and an integer k, return the k most frequent elements.
+    You may return the answer in any order.
 
     Constraints:
         1 <= nums.length <= 10^5
