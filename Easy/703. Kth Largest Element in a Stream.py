@@ -1,29 +1,40 @@
 import heapq
-from typing import List
 
 
 class KthLargest:
-    def __init__(self, k: int, nums: List[int]):
-        # make a heap containing the k biggest items from nums,
-        # self.heap[0] will contain the kth biggest item
-        self.heap = nums[:k]
+    """
+    Design a class to find the kth largest element in a stream. Note that it is
+    the kth largest element in the sorted order, not the kth distinct element.
+
+    Implement KthLargest class:
+
+        KthLargest(int k, int[] nums) Initializes the object with the integer k
+          and the stream of integers nums.
+        int add(int val) Appends the integer val to the stream and returns the
+          element representing the kth largest element in the stream.
+
+    Constraints:
+        1 <= k <= 10^4
+        0 <= nums.length <= 10^4
+        -10^4 <= nums[i] <= 10^4
+        -10^4 <= val <= 10^4
+        At most 10^4 calls will be made to add.
+        It is guaranteed that there will be at least k elements in the array when you search for the kth element.
+    """
+
+    def __init__(self, k: int, nums: list[int]):
+        # create a heap out of the k largest values, then heap[0] will be the kth largest
+        self.heap = heapq.nlargest(k, nums)
         heapq.heapify(self.heap)
-
-        for val in nums[k:]:
-            if val > self.heap[0]:
-                heapq.heappushpop(self.heap, val)
-
-        # len(nums) could be k - 1, so append -10001 in that case add -10001
-        # (constraint -10000 <= nums[i], val <= 10000)
-        # -10001 will be replaced by first add() call
-        if len(nums) < k:
-            heapq.heappush(self.heap, -10001)
-
+        # it is possible for len(heap) == k - 1. If so, add "infinitely small"
+        # number to heap, which will be removed at first add() call
+        if len(self.heap) < k:
+            heapq.heappush(self.heap, -1_000_000)
 
     def add(self, val: int) -> int:
-        # if val is bigger than the kth smallest, discard smallest and add val to heap
+        # if value is larger than kth largest then pushpop to heap
         if val > self.heap[0]:
             heapq.heappushpop(self.heap, val)
 
-        # return smallest item from heap
+        # return kth largest (== smallest value on heap)
         return self.heap[0]
