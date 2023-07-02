@@ -1,6 +1,7 @@
 import asyncio
 import os
 import re
+import subprocess
 import time
 
 import bs4
@@ -102,22 +103,29 @@ def get_driver() -> webdriver.Chrome:
 
 
 async def get_default_python_code(driver: webdriver.Chrome, url: str) -> str:
+    # navigate to url
+    driver.get(url)
+
     wait = WebDriverWait(driver, 10)  # Maximum wait time in seconds
+    # button to select language
     button: WebElement = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.mr-auto button")))  # type: ignore # unknown
     button.click()  # type: ignore # unknown
 
+    # select python as language
     li_option: WebElement = wait.until(EC.element_to_be_clickable((By.XPATH, '//li[contains(@class, "relative") and contains(@class, "flex") and contains(@class, "h-8") and contains(@class, "cursor-pointer") and contains(@class, "select-none")]//div[text()="Python3"]')))  # type: ignore # unknown
     li_option.click()  # type: ignore # unknown
 
+    # get lines of default code
     await asyncio.sleep(0.5)
     default_code_lines: WebElement = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".view-lines")))  # type: ignore # unknown
 
+    # by this time the full page should be loaded, store as file in case something goes wrong
     with open(TEMP_FULL_HTML_FILE_NAME, "wb") as f:
         f.write(driver.page_source.encode("utf-8"))
 
+    # code is stored with raw "\" + "n" characters, replace by newline
     res = str(default_code_lines.text).replace(r"\n", "\n")  # type: ignore # unknown
 
-    # for some reason driver does not quit properly, so yield res instead
     return res  # type: ignore # unknown
 
 
@@ -191,7 +199,7 @@ def get_description(parsed_content: bs4.BeautifulSoup) -> tuple[list[str], str]:
                 to_str = regular_tag_to_string(description_child, "\n").split("\n")
                 full_description_list.extend(to_str)
                 full_description_list.append("")
-            elif tag_type_str == "pre":
+            elif tag_type_str == "pre" or tag_type_str == "img":
                 pass
             else:
                 print(f"parsing tag type <{tag_type_str}> not implemented!")
@@ -258,20 +266,33 @@ async def main(driver: webdriver.Chrome, url: str):
         default_code_lines: list[str] = [l.strip() for l in result.split("\n")]  # type: ignore # may be unbound (not true)
         class_solution_idx = default_code_lines.index("class Solution:")
 
+        # split off and storethe rest of the code
         code_remainder = default_code_lines[class_solution_idx + 1 :]
+        # limit code to `class Solution` so docstring can be appended in the right place
         default_code_lines = default_code_lines[: class_solution_idx + 1]
 
+        # add docstring to code
         default_code_lines.append('    """')
         for line in line_limited_description_list:
             default_code_lines.append(line)
         default_code_lines.append('    """')
 
+        # empty new line between doctring and function
+        default_code_lines.append("")
+
+        # function signature, for some reason code_remainder sometimes split across
+        # several lines, probably something to do with the way the page is rendered
         default_code_lines.append(
             "    " + "".join(code_remainder).replace("List", "list")
         )
+        # empty new line at the end of file
+        default_code_lines.append("")
 
         with open(python_filename, "w") as f:
             f.writelines("\n".join(default_code_lines).replace(ZERO_WIDTH_SPACE, ""))
+
+        # open file
+        subprocess.run(["code", python_filename])
 
 
 if __name__ == "__main__":
