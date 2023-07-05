@@ -98,7 +98,6 @@ def get_driver() -> webdriver.Chrome:
     # options.add_argument("--window-size=1920,1200")  # type: ignore # unknown
 
     driver = webdriver.Chrome(options)
-    print(f"{type(driver)}")
     return driver
 
 
