@@ -49,15 +49,12 @@ class Solution:
             # max value for not visiting the current/last event
             do_not_take_curr = find_best(curr_event_idx - 1, picks_remaining)
 
-            # find the next possible previously-occuring event index
-            next_compatible_event_idx = bisect.bisect_right(
-                events_ends, curr_e_start - 1
+            # find the next possible previously-occuring event index by binary
+            # searching current events start in list of event ends. bisect_left
+            # and subtract 1 to get the "latest" compatible event
+            next_compatible_event_idx = (
+                bisect.bisect_left(events_ends, curr_e_start) - 1
             )
-            # if the event end of the index calculated is not exactly one less
-            # than the the current event start, then bisect will return an
-            # index higher than the next actual compatible event
-            if events_ends[next_compatible_event_idx] != curr_e_start - 1:
-                next_compatible_event_idx -= 1
 
             # maximum value for visiting the current event =
             #   current event value
