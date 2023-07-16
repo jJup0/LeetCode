@@ -1,17 +1,22 @@
 import asyncio
+import logging
 import os
 import re
 import subprocess
-import time
 
 import bs4
-import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+
+# import requests
+# import time
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+logger.setLevel(logging.INFO)
 
 MAX_LINE_LENGTH = 90
 TEMP_HTML_FILE_NAME = "temp_leetcode_page.html"
@@ -101,31 +106,45 @@ def get_driver() -> webdriver.Chrome:
     return driver
 
 
-async def get_default_python_code(driver: webdriver.Chrome, url: str) -> str:
+async def get_default_python_code(
+    driver: webdriver.Chrome, url: str
+) -> tuple[list[str], str, str]:
     # navigate to url
+    logger.info("trying to get page")
     driver.get(url)
+    logger.info("got page")
+    try:
+        wait = WebDriverWait(driver, 5)  # Maximum wait time in seconds
+        # button to select language
+        button: WebElement = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.mr-auto button")))  # type: ignore # unknown
+        logger.info("found code language button")
 
-    wait = WebDriverWait(driver, 10)  # Maximum wait time in seconds
-    # button to select language
-    button: WebElement = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.mr-auto button")))  # type: ignore # unknown
-    button.click()  # type: ignore # unknown
+        line_limited_description_list, python_filename = get_description(
+            bs4.BeautifulSoup(driver.page_source.encode("utf-8"), "html.parser")
+        )
+        logger.info("got description")
 
-    # select python as language
-    li_option: WebElement = wait.until(EC.element_to_be_clickable((By.XPATH, '//li[contains(@class, "relative") and contains(@class, "flex") and contains(@class, "h-8") and contains(@class, "cursor-pointer") and contains(@class, "select-none")]//div[text()="Python3"]')))  # type: ignore # unknown
-    li_option.click()  # type: ignore # unknown
+        button.click()  # type: ignore # unknown
+        logger.info("clicked language button")
 
-    # get lines of default code
-    await asyncio.sleep(0.5)
-    default_code_lines: WebElement = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".view-lines")))  # type: ignore # unknown
+        # select python as language
+        li_option: WebElement = wait.until(EC.element_to_be_clickable((By.XPATH, '//li[contains(@class, "relative") and contains(@class, "flex") and contains(@class, "h-8") and contains(@class, "cursor-pointer") and contains(@class, "select-none")]//div[text()="Python3"]')))  # type: ignore # unknown
+        li_option.click()  # type: ignore # unknown
+        logger.info("selected language")
 
-    # by this time the full page should be loaded, store as file in case something goes wrong
-    with open(TEMP_FULL_HTML_FILE_NAME, "wb") as f:
-        f.write(driver.page_source.encode("utf-8"))
+        # get lines of default code
+        await asyncio.sleep(0.5)
+        default_code_lines: WebElement = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".view-lines")))  # type: ignore # unknown
+        logger.info("got code lines")
+    finally:
+        # by this time the full page should be loaded, store as file in case something goes wrong
+        with open(TEMP_FULL_HTML_FILE_NAME, "wb") as f:
+            f.write(driver.page_source.encode("utf-8"))
 
     # code is stored with raw "\" + "n" characters, replace by newline
-    res = str(default_code_lines.text).replace(r"\n", "\n")  # type: ignore # unknown
+    default_code = str(default_code_lines.text).replace(r"\n", "\n")  # type: ignore # unknown
 
-    return res  # type: ignore # unknown
+    return line_limited_description_list, python_filename, default_code  # type: ignore # unknown
 
 
 def get_daily_challenge_url() -> str:
@@ -145,9 +164,11 @@ def get_description(parsed_content: bs4.BeautifulSoup) -> tuple[list[str], str]:
     )
 
     # get difficulty
-    difficulty_div = parsed_content.select_one(
-        ".".join("div inline-block py-1 text-xs font-medium capitalize".split(" ")),
+    difficulty_div_classes = ".".join(
+        "div inline-block font-medium capitalize".split(" ")
     )
+    logger.info(f"{difficulty_div_classes=}")
+    difficulty_div = parsed_content.select_one(difficulty_div_classes)
     if difficulty_div is None:
         raise Exception("Could not find difficulty")
     difficulty = difficulty_div.text.strip()
@@ -248,21 +269,23 @@ async def main(driver: webdriver.Chrome, url: str):
         # Schedule the coroutine to run asynchronously
         get_default_code_task = async_io_loop.create_task(coroutine)
 
-        # avoid rate limit
-        time.sleep(1)
-        response = requests.get(url)
-        with open(TEMP_HTML_FILE_NAME, "wb") as f:
-            f.write(response.content)
+    #     # avoid rate limit
+    #     time.sleep(1)
+    #     response = requests.get(url)
+    #     with open(TEMP_HTML_FILE_NAME, "wb") as f:
+    #         f.write(response.content)
 
-    with open(TEMP_HTML_FILE_NAME, "rb") as f:
-        parsed_content = bs4.BeautifulSoup(f.read(), "html.parser")
+    # with open(TEMP_HTML_FILE_NAME, "rb") as f:
+    #     parsed_content = bs4.BeautifulSoup(f.read(), "html.parser")
 
-    line_limited_description_list, python_filename = get_description(parsed_content)
+    # line_limited_description_list, python_filename = get_description(parsed_content)
 
     if online:
         print("waiting on task")
-        result = await get_default_code_task  # type: ignore # may be unbound (not true)
-        default_code_lines: list[str] = [l.strip() for l in result.split("\n")]  # type: ignore # may be unbound (not true)
+        line_limited_description_list, python_filename, default_code_unformatted = await get_default_code_task  # type: ignore # may be unbound (not true)
+        assert isinstance(line_limited_description_list, list)
+        assert isinstance(python_filename, str)
+        default_code_lines: list[str] = [l.strip() for l in default_code_unformatted.split("\n")]  # type: ignore # may be unbound (not true)
         class_solution_idx = default_code_lines.index("class Solution:")
 
         # split off and storethe rest of the code
@@ -290,8 +313,12 @@ async def main(driver: webdriver.Chrome, url: str):
         with open(python_filename, "w") as f:
             f.writelines("\n".join(default_code_lines).replace(ZERO_WIDTH_SPACE, ""))
 
-        # open file
-        subprocess.run(["code", python_filename])
+        try:
+            # open file
+            subprocess.run(["code", python_filename])
+        except Exception as err:
+            logging.error(err)
+            print(f"Could not open {python_filename} with vscode")
 
 
 if __name__ == "__main__":
