@@ -286,7 +286,14 @@ async def main(driver: webdriver.Chrome, url: str):
         assert isinstance(line_limited_description_list, list)
         assert isinstance(python_filename, str)
         default_code_lines: list[str] = [l.strip() for l in default_code_unformatted.split("\n")]  # type: ignore # may be unbound (not true)
-        class_solution_idx = default_code_lines.index("class Solution:")
+        class_solution_idx = -1
+        for i, line in enumerate(default_code_lines):
+            if line.startswith("class"):
+                class_solution_idx = i
+                break
+        assert (
+            class_solution_idx != -1
+        ), f'Could not find "class" in {default_code_lines}'
 
         # split off and storethe rest of the code
         code_remainder = default_code_lines[class_solution_idx + 1 :]
@@ -315,7 +322,7 @@ async def main(driver: webdriver.Chrome, url: str):
 
         try:
             # open file
-            subprocess.run(["code", python_filename])
+            subprocess.run(["code", f'"{python_filename}"'])
         except Exception as err:
             logging.error(err)
             print(f"Could not open {python_filename} with vscode")
