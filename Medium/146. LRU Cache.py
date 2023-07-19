@@ -1,3 +1,6 @@
+from collections import OrderedDict
+
+
 class ListNode:
     def __init__(
         self,
@@ -116,3 +119,24 @@ class LRUCache:
         curr_node.next = None
         # make current node new tail of the list
         self.lr_tail = curr_node
+
+
+class LRUCacheOrderedDict:
+    """Ordered dict has full built in LRU functionality."""
+
+    def __init__(self, capacity: int):
+        self.lru: OrderedDict[int, int] = OrderedDict()
+        self.cap = capacity
+
+    def get(self, key: int) -> int:
+        if key in self.lru:
+            self.lru.move_to_end(key)
+            return self.lru[key]
+        return -1
+
+    def put(self, key: int, value: int) -> None:
+        self.lru[key] = value
+        self.lru.move_to_end(key)
+        if len(self.lru) > self.cap:
+            # pop least recently use
+            self.lru.popitem(False)
