@@ -11,11 +11,20 @@ class Solution:
     """
 
     def eraseOverlapIntervals(self, intervals: list[list[int]]) -> int:
+        return self._sort_by_stop_time(intervals)
+
+    def _eraseOverlapIntervals_naive(self, intervals: list[list[int]]) -> int:
+        """
+        First attempt, sorts by interval start and uses "stack" which is not necessary
+        as it always contains exactly one value.
+        O(n) / O(1)     time / space complexity
+        """
         # sort by start
         intervals.sort(key=lambda interval: interval[0])
 
         # intervals which are still currently "active"
-        # invariant: values on stack are strictly increasing
+        # # ~~invariant: values on stack are strictly increasing~~
+        # actual invariant: stack always contains one value
         interval_ends_stack: list[int] = []
 
         # amount of intervals removed
@@ -46,3 +55,26 @@ class Solution:
                 interval_ends_stack.append(stop)
 
         return removed
+
+        return intervals_removed
+
+    def _sort_by_stop_time(self, intervals: list[list[int]]) -> int:
+        """
+        Sort by end time. Iterate through intervals and delete if
+        previous interval stops after current interval starts.
+        O(n) / O(1)     time / space complexity
+        """
+
+        intervals = sorted(intervals, key=lambda x: x[1])
+        prev_stop = -1_000_000
+
+        intervals_removed = 0
+        for start, stop in intervals:
+            if start < prev_stop:
+                # intervals overlap, remove the current interval, so do not
+                # update prev_stop, as it is lower than current stop
+                intervals_removed += 1
+            else:
+                # intervals do not overlap, update prev_stop
+                prev_stop = stop
+        return intervals_removed
