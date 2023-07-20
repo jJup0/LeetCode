@@ -319,13 +319,13 @@ async def main(driver: webdriver.Chrome, url: str):
 
         with open(python_filename, "w") as f:
             f.writelines("\n".join(default_code_lines).replace(ZERO_WIDTH_SPACE, ""))
-
+        await asyncio.sleep(0.1)
         try:
             # open file
-            subprocess.run(["code", f'"{python_filename}"'])
+            subprocess.run(["code", f'"{python_filename}"'], shell=True)
         except Exception as err:
             logging.error(err)
-            print(f"Could not open {python_filename} with vscode")
+            print(f'Could not open "{python_filename}" with vscode')
 
 
 if __name__ == "__main__":
