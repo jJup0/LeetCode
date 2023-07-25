@@ -319,10 +319,10 @@ async def main(driver: webdriver.Chrome, url: str):
 
         with open(python_filename, "w") as f:
             f.writelines("\n".join(default_code_lines).replace(ZERO_WIDTH_SPACE, ""))
-        await asyncio.sleep(0.1)
         try:
+            logger.info(f'trying to open "{python_filename}"')
             # open file
-            subprocess.run(["code", f'"{python_filename}"'], shell=True)
+            subprocess.run(["code", f"{python_filename}"], shell=True)
         except Exception as err:
             logging.error(err)
             print(f'Could not open "{python_filename}" with vscode')
