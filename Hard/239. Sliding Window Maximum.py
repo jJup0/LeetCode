@@ -49,3 +49,25 @@ class Solution:
             max_sliding_window.append(-window[0])
 
         return max_sliding_window
+
+    def max_sliding_window_alt(self, nums: list[int], k: int) -> list[int]:
+        dq: collections.deque[int] = collections.deque()
+        res: list[int] = []
+
+        for i in range(k):
+            while dq and nums[i] >= nums[dq[-1]]:
+                dq.pop()
+            dq.append(i)
+
+        res.append(nums[dq[0]])
+
+        for i in range(k, len(nums)):
+            if dq and dq[0] == i - k:
+                dq.popleft()
+            while dq and nums[i] >= nums[dq[-1]]:
+                dq.pop()
+
+            dq.append(i)
+            res.append(nums[dq[0]])
+
+        return res
