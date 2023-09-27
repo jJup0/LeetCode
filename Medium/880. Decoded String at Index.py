@@ -1,99 +1,55 @@
 class Solution:
+    """
+    You are given an encoded string s. To decode the string to a tape, the encoded
+    string is read one character at a time and the following steps are taken:
+
+    - If the character read is a letter, that letter is written onto the tape.
+    - If the character read is a digit d, the entire current tape is repeatedly
+      written d - 1 more times in total.
+
+    Given an integer k, return the kth letter (1-indexed) in the decoded string.
+
+    Constraints:
+    - 2 <= s.length <= 100
+    - s consists of lowercase English letters and digits 2 through 9.
+    - s starts with a letter.
+    - 1 <= k <= 10^9
+    - It is guaranteed that k is less than or equal to the length of the decoded
+      string.
+    - The decoded string is guaranteed to have less than 263 letters.
+    """
+
     def decodeAtIndex(self, s: str, k: int) -> str:
-        while True:
-            l = 0
-            for i, c in enumerate(s):
-                new = l * int(c) if c.isdigit() else l + 1
-                if new >= k:
-                    break
-                l = new
+        """
+        O(n) / O(1)     time / space complexity
+        """
+        # "build" the string according to the rules, but only store the length
+        build_str_length = i = 0
+        for i, c in enumerate(s):
+            build_str_length = (
+                build_str_length * int(c) if c.isdigit() else build_str_length + 1
+            )
+            if k <= build_str_length:
+                break
 
-            if not (k % new and k % l):
-                while s[i].isdigit():
-                    i -= 1
-                return s[i]
+        # iterate through the string backwards starting at index i
+        for j in range(i, -1, -1):
+            c = s[j]
+            if c.isdigit():
+                # if c is a digit, undo the length multiplication
+                # integer division guaranteed to not truncate
+                build_str_length //= int(c)
+                # calculate k modulo build_str_length, since the current string
+                # was just repeated c times, the kth character from the completely
+                # built string is the same as the (k%len_before_multiplying)-th
+                # character in the string built up to index j
+                k %= build_str_length
+            else:
+                # since k is 1-indexed, k == 0 if the (original-k)th character
+                # is the last character in a sequence of alphabetical characters
+                if k == build_str_length or k == 0:
+                    return c
+                # character is alphabetical, reduce decrement length
+                build_str_length -= 1
 
-            k %= l
-
-        # # less scuffed version
-        # buildLen = 0
-        # for i, c in enumerate(s):
-        #     buildLen = buildLen * int(c) if c.isdigit() else buildLen + 1
-        #     if k <= buildLen:
-        #         break
-        # for j in range(i, -1, -1):
-        #     c = s[j]
-        #     if c.isdigit():
-        #         buildLen /= int(c)
-        #         k %= buildLen
-        #     else:
-        #         if k == buildLen or k == 0:
-        #             return c
-        #         buildLen -= 1
-
-
-#         # first version, memory limit
-#         l = 0
-#         build = ""
-#         for i, c in enumerate(s):
-#             if c.isnumeric():
-#                 val = ord(c) - ord('0')
-#                 l *= val
-#                 if l >= k:
-#                     break
-#                 build *= val
-#             else:
-#                 l += 1
-#                 build += c
-#                 if l >= k:
-#                     break
-
-
-#         return build[k%len(build) - 1]
-
-
-# first accepted version lmao
-# class Solution:
-#     def decodeAtIndex(self, s: str, k: int, deep = 0) -> str:
-#         if deep == 10:
-#             return
-#         l = 0
-#         # lengths =[]
-#         for i, c in enumerate(s):
-#             if c.isnumeric():
-#                 val = ord(c) - ord('0')
-#                 l *= val
-#                 if l >= k:
-#                     l /= val
-#                     break
-#             else:
-#                 val = 1
-#                 l += 1
-#                 if l >= k:
-#                     l -=1
-#                     break
-
-
-#         print(k, l)
-#         if k%(l + val) == 0:
-#             while s[i].isnumeric():
-#                 i -= 1
-#             return s[i]
-
-#         if k%l > 100:
-#             return self.decodeAtIndex(s, int(k%l), deep + 1)
-
-#         print(k%l)
-#         build = ""
-#         for c in s[:i]:
-#             if c.isnumeric():
-#                 val = ord(c) - ord('0')
-#                 build *= val
-#             else:
-#                 build += c
-#             if len(build) > k:
-#                 break
-#         # if k - 1 >= len(build):
-#         #     print(k, build)
-#         # else:
-#         return build[k%len(build)- 1]
+        raise ValueError(f"{s=} and {k=} are invalid inputs")
