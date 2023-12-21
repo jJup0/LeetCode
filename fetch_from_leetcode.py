@@ -1,27 +1,17 @@
-import asyncio
 import logging
 import os
 import re
 import subprocess
+from typing import Any, TypedDict
 
-import bs4
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-
-# import requests
-# import time
+logging.basicConfig()
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 logger.setLevel(logging.INFO)
 
-MAX_LINE_LENGTH = 90
-TEMP_HTML_FILE_NAME = "temp_leetcode_page.html"
-TEMP_FULL_HTML_FILE_NAME = "temp_leetcode_full_page.html"
-ZERO_WIDTH_SPACE = "\u200b"
+import bs4
+import requests
+
+MAX_LINE_LENGTH = 80
 
 
 def replace_multiple_whitespace_single_space_strip(string: str):
@@ -50,6 +40,71 @@ def replace_multiple_whitespace_single_space_replace_special_newling(string: str
         .replace(SPECIAL_NEWLINE_CHAR_PLACEHOLDER, "\n")
         .replace(SPECIAL_UNREMOVEABLE_SPACE_PLACEHOLDER, " ")
     )
+
+
+def leetcode_graphql_request(
+    query: str, variables: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    # LeetCode GraphQL API endpoint
+    api_url = "https://leetcode.com/graphql"
+
+    # Define the headers with required information
+    headers = {
+        "Content-Type": "application/json",
+        "Referer": "https://leetcode.com/",
+    }
+
+    # Define the GraphQL query as a dictionary
+    graphql_query: dict[str, Any] = {"query": query}
+    if variables:
+        graphql_query["variables"] = variables
+
+    # Make the GraphQL request
+    response = requests.post(api_url, headers=headers, json=graphql_query)
+
+    # Check if the request was successful (status code 200)
+    if response.status_code == 200:
+        return response.json()
+
+    raise Exception(
+        f"Error: Failed to make GraphQL request. Status Code: {response.status_code}. Response: {response.json()}"
+    )
+
+
+def get_daily_question_slug():
+    daily_q_query = """
+    {
+        activeDailyCodingChallengeQuestion {
+            date
+            link
+            question {
+                titleSlug
+            }
+        }
+    }
+    """
+    result = leetcode_graphql_request(daily_q_query)
+    daily_q_title_slug = result["data"]["activeDailyCodingChallengeQuestion"][
+        "question"
+    ]["titleSlug"]
+    return daily_q_title_slug
+
+
+def get_daily_question_description_html(daily_q_title_slug: str):
+    question_query = """query questionContent($titleSlug: String!) {
+        question(titleSlug: $titleSlug) {
+            content
+            mysqlSchemas
+            dataSchemas
+        }
+    }
+    """
+    question_variables = {
+        "titleSlug": daily_q_title_slug,
+    }
+    result = leetcode_graphql_request(question_query, question_variables)
+    problem_description_html = result["data"]["question"]["content"]
+    return problem_description_html
 
 
 def regular_tag_to_string(tag: bs4.Tag, joiner: str = "", list_depth: int = 0):
@@ -91,102 +146,15 @@ def regular_tag_to_string(tag: bs4.Tag, joiner: str = "", list_depth: int = 0):
     res = joiner.join(res_str_list)
     if tag.name == "ul":
         pass
-    # print(res)
-    # print("-------------------------")
     return res
 
 
-def get_driver() -> webdriver.Chrome:
-    options = Options()
-    options.add_argument("--headless")  # type: ignore # unknown
-    options.add_experimental_option("prefs", {"browser.tabs.warnOnClose": False})  # type: ignore # unknown
-    # options.add_argument("--window-size=1920,1200")  # type: ignore # unknown
+def parse_description_html(description_html: str) -> str:
+    description_html = f"<div>{description_html}</div>"
+    soup = bs4.BeautifulSoup(description_html, "html.parser")
 
-    driver = webdriver.Chrome(options)
-    return driver
-
-
-async def get_default_python_code(
-    driver: webdriver.Chrome, url: str
-) -> tuple[list[str], str, str]:
-    # navigate to url
-    logger.info("trying to get page")
-    driver.get(url)
-    logger.info("got page")
-    try:
-        wait = WebDriverWait(driver, 5)  # Maximum wait time in seconds
-        # button to select language
-        button: WebElement = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.mr-auto button")))  # type: ignore # unknown
-        logger.info("found code language button")
-
-        line_limited_description_list, python_filename = get_description(
-            bs4.BeautifulSoup(driver.page_source.encode("utf-8"), "html.parser")
-        )
-        logger.info("got description")
-
-        button.click()  # type: ignore # unknown
-        logger.info("clicked language button")
-
-        # select python as language
-        li_option: WebElement = wait.until(EC.element_to_be_clickable((By.XPATH, '//li[contains(@class, "relative") and contains(@class, "flex") and contains(@class, "h-8") and contains(@class, "cursor-pointer") and contains(@class, "select-none")]//div[text()="Python3"]')))  # type: ignore # unknown
-        li_option.click()  # type: ignore # unknown
-        logger.info("selected language")
-
-        # get lines of default code
-        await asyncio.sleep(0.5)
-        default_code_lines: WebElement = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".view-lines")))  # type: ignore # unknown
-        logger.info("got code lines")
-    finally:
-        # by this time the full page should be loaded, store as file in case something goes wrong
-        with open(TEMP_FULL_HTML_FILE_NAME, "wb") as f:
-            f.write(driver.page_source.encode("utf-8"))
-
-    # code is stored with raw "\" + "n" characters, replace by newline
-    default_code = str(default_code_lines.text).replace(r"\n", "\n")  # type: ignore # unknown
-
-    return line_limited_description_list, python_filename, default_code  # type: ignore # unknown
-
-
-def get_daily_challenge_url() -> str:
-    ...
-
-
-def get_description(parsed_content: bs4.BeautifulSoup) -> tuple[list[str], str]:
-    # get problem name
-    problem_name_tag = parsed_content.find(
-        "span",
-        {"class": "mr-2 text-label-1 dark:text-dark-label-1 text-lg font-medium"},
-    )
-    if problem_name_tag is None:
-        raise Exception("Could not find problem name tag")
-    problem_title = replace_multiple_whitespace_single_space_strip(
-        problem_name_tag.text
-    )
-
-    # get difficulty
-    difficulty_div_classes = ".".join(
-        "div inline-block font-medium capitalize".split(" ")
-    )
-    logger.info(f"{difficulty_div_classes=}")
-    difficulty_div = parsed_content.select_one(difficulty_div_classes)
-    if difficulty_div is None:
-        raise Exception("Could not find difficulty")
-    difficulty = difficulty_div.text.strip()
-    if difficulty not in ("Easy", "Medium", "Hard"):
-        raise Exception(f'Diffulty "{difficulty}" does not exist')
-
-    # construct filename and check if exists
-    python_file_path = os.path.join(difficulty, problem_title + ".py")
-    if os.path.exists(python_file_path):
-        raise Exception(f"{python_file_path} already exists")
-
-    # get problem description
-    description_div = parsed_content.find("div", {"class": "_1l1MA"})
-    if description_div is None:
-        raise Exception("Could not find description")
-
-    if not isinstance(description_div, bs4.Tag):
-        raise Exception("Somehow description is not a tag")
+    description_div = soup.find("div")
+    assert isinstance(description_div, bs4.Tag)
 
     full_description_list: list[str] = []
     add_to_list = True
@@ -233,8 +201,8 @@ def get_description(parsed_content: bs4.BeautifulSoup) -> tuple[list[str], str]:
     line_limited_description_list: list[str] = []
     indent_size = 4
     for line in full_description_list:
-        if len(line) + indent_size <= MAX_LINE_LENGTH:
-            line_limited_description_list.append("    " + line)
+        if len(line) <= MAX_LINE_LENGTH:
+            line_limited_description_list.append(line)
             continue
 
         list_depth = 0
@@ -244,9 +212,9 @@ def get_description(parsed_content: bs4.BeautifulSoup) -> tuple[list[str], str]:
             list_depth = 4
 
         breaks = 0
-        curr_indent_size = indent_size
+        curr_indent_size = 0
         while len(line) + indent_size > MAX_LINE_LENGTH:
-            curr_indent_size = indent_size + list_depth * (breaks > 0)
+            curr_indent_size = list_depth * (breaks > 0)
             split_idx = line.rfind(" ", 0, MAX_LINE_LENGTH - curr_indent_size)
             line_limited_description_list.append(
                 " " * curr_indent_size + line[:split_idx]
@@ -256,89 +224,119 @@ def get_description(parsed_content: bs4.BeautifulSoup) -> tuple[list[str], str]:
 
         line_limited_description_list.append(" " * curr_indent_size + line)
 
-    return line_limited_description_list, python_file_path
+    return "\n".join(line_limited_description_list)
 
 
-async def main(driver: webdriver.Chrome, url: str):
-    online = True
-    if online:
-        # Create an event loop
-        async_io_loop = asyncio.get_event_loop()
-        # Call the async function and obtain a coroutine object
-        coroutine = get_default_python_code(driver, url)
-        # Schedule the coroutine to run asynchronously
-        get_default_code_task = async_io_loop.create_task(coroutine)
+def get_daily_question_description(daily_q_title_slug: str):
+    description_html = get_daily_question_description_html(daily_q_title_slug)
+    description_str = parse_description_html(description_html)
+    return description_str
 
-    #     # avoid rate limit
-    #     time.sleep(1)
-    #     response = requests.get(url)
-    #     with open(TEMP_HTML_FILE_NAME, "wb") as f:
-    #         f.write(response.content)
 
-    # with open(TEMP_HTML_FILE_NAME, "rb") as f:
-    #     parsed_content = bs4.BeautifulSoup(f.read(), "html.parser")
+class QuestionInfo(TypedDict):
+    questionId: int
+    questionFrontendId: int
+    title: str
+    titleSlug: str
+    difficulty: str
 
-    # line_limited_description_list, python_filename = get_description(parsed_content)
 
-    if online:
-        print("waiting on task")
-        line_limited_description_list, python_filename, default_code_unformatted = await get_default_code_task  # type: ignore # may be unbound (not true)
-        assert isinstance(line_limited_description_list, list)
-        assert isinstance(python_filename, str)
-        default_code_lines: list[str] = [l.strip() for l in default_code_unformatted.split("\n")]  # type: ignore # may be unbound (not true)
-        class_solution_idx = -1
-        for i, line in enumerate(default_code_lines):
-            if line.startswith("class"):
-                class_solution_idx = i
-                break
-        assert (
-            class_solution_idx != -1
-        ), f'Could not find "class" in {default_code_lines}'
+def get_question_info(daily_q_title_slug: str) -> QuestionInfo:
+    question_query = """query questionTitle($titleSlug: String!) {
+        question(titleSlug: $titleSlug) {
+            questionId
+            questionFrontendId
+            title
+            titleSlug
+            difficulty
+        }
+    }
+    """
+    gql_variables = {
+        "titleSlug": daily_q_title_slug,
+    }
+    result = leetcode_graphql_request(question_query, gql_variables)
+    return QuestionInfo(result["data"]["question"])
 
-        # split off and storethe rest of the code
-        code_remainder = default_code_lines[class_solution_idx + 1 :]
-        # limit code to `class Solution` so docstring can be appended in the right place
-        default_code_lines = default_code_lines[: class_solution_idx + 1]
 
-        # add docstring to code
-        default_code_lines.append('    """')
-        for line in line_limited_description_list:
-            default_code_lines.append(line)
-        default_code_lines.append('    """')
+def get_default_code_unclean(title_slug: str):
+    code_gql_query = """query questionEditorData($titleSlug: String!) {
+        question(titleSlug: $titleSlug) {
+            questionId
+            codeSnippets {
+                langSlug
+                code
+            }
+        }
+    }
+    """
+    code_gql_variables = {
+        "titleSlug": title_slug,
+    }
+    result = leetcode_graphql_request(code_gql_query, code_gql_variables)
+    all_code_snippets: list[Any] = result["data"]["question"]["codeSnippets"]
+    for code_snippet in all_code_snippets:
+        if code_snippet["langSlug"] == "python3":
+            return code_snippet["code"]
+    raise Exception("python3 not found in languages")
 
-        # empty new line between doctring and function
-        default_code_lines.append("")
 
-        # function signature, for some reason code_remainder sometimes split across
-        # several lines, probably something to do with the way the page is rendered
-        default_code_lines.append(
-            "    " + "".join(code_remainder).replace("List", "list")
-        )
-        # empty new line at the end of file
-        default_code_lines.append("")
+def clean_code(unclean_code: str) -> str:
+    replacements = (("List", "list"),)
+    for str_to_replace, replacement in replacements:
+        unclean_code = unclean_code.replace(str_to_replace, replacement)
+    return unclean_code
 
-        with open(python_filename, "w") as f:
-            f.writelines("\n".join(default_code_lines).replace(ZERO_WIDTH_SPACE, ""))
-        try:
-            logger.info(f'trying to open "{python_filename}"')
-            # open file
-            subprocess.run(["code", f"{python_filename}"], shell=True)
-        except Exception as err:
-            logging.error(err)
-            print(f'Could not open "{python_filename}" with vscode')
+
+def get_default_code(title_slug: str) -> str:
+    unclean_code = get_default_code_unclean(title_slug)
+    return clean_code(unclean_code)
+
+
+def get_question_path(question_info: QuestionInfo) -> str:
+    q_number = question_info["questionFrontendId"]
+    difficulty = question_info["difficulty"]
+    title = question_info["title"]
+    file_path = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), difficulty, f"{q_number}. {title}.py")
+    )
+    return file_path
+
+
+def create_question_file(
+    q_description: str, default_code: str, question_info: QuestionInfo
+):
+    file_path = get_question_path(question_info)
+    if os.path.isfile(file_path):
+        logger.info("File already exists")
+        return
+
+    with open(file_path, "w") as f:
+        f.write('"""\n')
+        f.write(q_description)
+        f.write('\n"""\n')
+        f.write(default_code)
+        f.write("...")
+
+
+def open_question_file(question_info: QuestionInfo):
+    file_path = get_question_path(question_info)
+    subprocess.run(["code", file_path], shell=True)
+
+
+def main():
+    daily_q_slug = get_daily_question_slug()
+
+    default_code = get_default_code(daily_q_slug)
+
+    q_description = get_daily_question_description(daily_q_slug)
+
+    question_info = get_question_info(daily_q_slug)
+
+    create_question_file(q_description, default_code, question_info)
+
+    open_question_file(question_info)
 
 
 if __name__ == "__main__":
-    get_by_stdio = True
-    if get_by_stdio:
-        url = input("Enter URL:\n")
-        # url = "https://leetcode.com/problems/total-cost-to-hire-k-workers/"
-    else:
-        url = get_daily_challenge_url()
-
-    driver = get_driver()
-    asyncio.run(main(driver, url))
-
-    # x = requests.get("https://leetcode.com/problemset/all/")
-    # with open("x.html", "wb") as f:
-    #     f.write(x.content)
+    main()
