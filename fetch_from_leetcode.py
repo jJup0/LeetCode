@@ -13,6 +13,8 @@ import requests
 
 MAX_LINE_LENGTH = 80
 
+# TODO fix list item line overflow (new line is not indented)
+
 
 def replace_multiple_whitespace_single_space_strip(string: str):
     return replace_multiple_whitespace_single_space(string).strip()
