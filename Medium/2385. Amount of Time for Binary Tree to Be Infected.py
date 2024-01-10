@@ -15,6 +15,7 @@ Constraints:
 - A node with a value of start exists in the tree.
 """
 
+from collections import defaultdict
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -33,30 +34,32 @@ if TYPE_CHECKING:
 
 class Solution:
     def amountOfTime(self, root: TreeNode, start: int) -> int:
-        self.parents: dict[int, TreeNode] = {root.val: root}
-        self.start = start
-        self.root: TreeNode
+        """
+        O(n) / O(n)     time / space complexity
+        """
+        self.val_to_neighbors: defaultdict[int, list[int]] = defaultdict(list)
+        self._populate_neighbors(root)
+
+        infected: set[int] = set()
+        minutes_passed = -1
         queue = [start]
-        infected: set[int] = set([start])
-
-        round = 0
         while queue:
-            rounds += 1
-            new_queue = []
-            for node in queue:
-                infected.add(node)
-                parent = self.parents[node]
-                if parent.val not in infected:
-                    new_queue.add(parent.val)
+            minutes_passed += 1
+            new_queue: list[int] = []
+            for val in queue:
+                infected.add(val)
+                for neighbor in self.val_to_neighbors[val]:
+                    if neighbor not in infected:
+                        new_queue.append(neighbor)
+            queue = new_queue
+        return minutes_passed
 
-        return rounds
-
-    def _get_parents_and_find_root(self, node: TreeNode):
-        if node.val == self.start:
-            self.root = node
+    def _populate_neighbors(self, node: TreeNode):
         if node.left:
-            self.parents[node.left.val] = node
-            self._get_parents_and_find_root(node.left)
+            self.val_to_neighbors[node.val].append(node.left.val)
+            self.val_to_neighbors[node.left.val].append(node.val)
+            self._populate_neighbors(node.left)
         if node.right:
-            self.parents[node.right.val] = node
-            self._get_parents_and_find_root(node.right)
+            self.val_to_neighbors[node.val].append(node.right.val)
+            self.val_to_neighbors[node.right.val].append(node.val)
+            self._populate_neighbors(node.right)
