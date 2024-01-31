@@ -1,26 +1,22 @@
-# import heapq
-from typing import List
+"""
+Given an array of integers temperatures represents the daily temperatures,
+return an arrayanswersuch thatanswer[i]is the number of days you have to wait
+after theithday to get a warmer temperature. If there is no future day for
+which this is possible, keep answer[i] == 0 instead.
+
+Constraints:
+- 1 <= temperatures.length <= 10^5
+- 30 <= temperatures[i] <= 100
+"""
 
 
 class Solution:
-    def dailyTemperatures(self, temperatures: List[int]) -> List[int]:
-        #         # somewhat slow, no need for minheap, is in O(n*log(n))
-        #         res = [0] * len(temperatures)
-        #         # minheap to track lowest temperatures so far
-        #         prevTemps = []
-        #         for i in range(len(temperatures)):
-        #             temp = temperatures[i]
-        #             # print(temp, prevTemps)
-        #             while prevTemps and prevTemps[0][0] < temp:
-        #                 prevTemp, j = heapq.heappop(prevTemps)
-        #                 res[j] = i-j
-        #             heapq.heappush(prevTemps, (temp, i))
-        #         # print(temperatures)
-        #         # print(res)
-        #         return res
-
-        # keeps all indexs of days that havent had a warmer day
-        stack = []
+    def dailyTemperatures(self, temperatures: list[int]) -> list[int]:
+        """
+        O(n) / O(n)     time / space complexity
+        """
+        # keep a monotonic stack of indexes of decreasing temperatures
+        stack: list[int] = []
         res = [0] * len(temperatures)
         for i, temperature in enumerate(temperatures):
             while stack and temperature > temperatures[stack[-1]]:
