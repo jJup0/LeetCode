@@ -1,107 +1,40 @@
-from bisect import bisect
-from math import sqrt
+"""
+Given a set of distinct positive integers nums, return the largest subset answer
+such that every pair (answer[i], answer[j]) of elements in this subset satisfies:
+- answer[i] % answer[j] == 0, or
+- answer[j] % answer[i] == 0
+
+If there are multiple solutions, return any of them.
+
+Constraints:
+- 1 <= nums.length <= 1000
+- 1 <= nums[i] <= 2 * 109
+- All the integers in nums are unique.
+"""
 
 
 class Solution:
-    def largestDivisibleSubset(self, nums: [int]) -> [int]:
-
-        # they have a cheecky [20000000] testcase, kinda just cheating
-        if len(nums) == 1:
-            return nums
-
+    def largestDivisibleSubset(self, nums: list[int]) -> list[int]:
+        """
+        O(n*n) / O(n*n)     time / space complexity
+        """
         nums.sort()
-        dp = dict()
+        # factor_subsets[i] contains a list of the largest divisible subset where nums[i] is the largest number
+        factor_subsets: list[list[int]] = []
 
-        for num in nums:
-            # doesnt include factor pairs, only the smaller factor
-            factors = [divisor for divisor in range(1, int(sqrt(num)) + 1) if not (num % divisor)]
-            largestSubSet = []
-            for f in factors:
-                if (f in dp) and len(dp[f]) > len(largestSubSet):
-                    largestSubSet = dp[f]
+        for i, num in enumerate(nums):
+            # get all factor sets of numbers
+            compatible_factor_sets: list[list[int]] = [
+                factor_subsets[j] for j in range(i) if num % nums[j] == 0
+            ]
 
-                # get factor pair
-                f = num // f
-                if (f in dp) and len(dp[f]) > len(largestSubSet):
-                    largestSubSet = dp[f]
+            # get longest compatible set
+            longest_compatible_factor_set = max(
+                compatible_factor_sets,
+                key=len,
+                default=[],  # type: ignore # strict type checking does not like unknown list type
+            )
+            # add n
+            factor_subsets.append(longest_compatible_factor_set + [num])
 
-            dp[num] = largestSubSet + [num]
-
-        return max(dp.values(), key=len)
-
-
-class SolutionOLD:
-
-    def largestDivisibleSubsetPrime(self, nums: [int]) -> [int]:
-        # tried to do it with prime factors, too complicated
-        nums.sort()
-        dp = defaultdict(list)
-        primes = self.SieveOfEratosthenes(int(sqrt(nums[-1])) + 1)
-        print(primes)
-
-        def getFactor(num):
-            numSqrtInt = int(sqrt(num)) + 1
-
-            maxPrimeIdx = bisect(primes, numSqrtInt)
-
-            primesFactors = [divisor for divisor in primes[:maxPrimeIdx + 1] if not (num % divisor)]
-            factors = []
-            for prime in primeFactors:
-                primePower = prime * prime
-                while prime < numSqrtInt:
-                    if not (num % primePower):
-                        factors.append(primePower)
-                    primePower *= prime
-
-        for num in nums:
-            factors = getFactor(num)
-            print(num, factors)
-            largest = []
-            for f in factors:
-                if f in dp and len(dp[f]) > len(largest):
-                    largest = dp[f]
-
-                f = num // f
-                if f in dp and len(dp[f]) > len(largest):
-                    largest = dp[f]
-            print(dp)
-            print()
-            dp[num] = largest + [num]
-
-        return max(dp.values(), key=len)
-
-    # from https://www.geeksforgeeks.org/python-program-for-sieve-of-eratosthenes/
-    def SieveOfEratosthenes(self, n):
-        # Create a boolean array "prime[0..n]" and initialize
-        # all entries it as true. A value in prime[i] will
-        # be false if it is not a prime, else true.
-        primesBool_l = [True] * (n + 1)
-        primesBool_l[0] = False
-        primesBool_l[1] = False
-        primes = []
-        p = 2
-        while (p <= n):
-
-            # If prime[p] has not been sieved, its a prime
-            if (primesBool_l[p]):
-                primes.append(p)
-
-                # all multiples of p are not prime
-                for i in range(p * p, n + 1, p):
-                    primesBool_l[i] = False
-
-            p += 1
-
-        return primes
-
-#             [1]
-# [1,2,4,8]
-# [20000000]
-
-        # def largestDivisibleSubset1(self, nums: [int]) -> [int]:
-        # dp = [[]]
-        # for n in sorted(nums):
-        #     dp.append(max((divSubSet+[n] for divSubSet in dp
-        #                    if (divSubSet == []) or n % divSubSet[-1] == 0), key=len))
-        #     # n will always be bigger than divSubSet[-1], so check for n % divSubSet[-1] not other way around
-        # return max(dp, key=len)
+        return max(factor_subsets, key=len)
