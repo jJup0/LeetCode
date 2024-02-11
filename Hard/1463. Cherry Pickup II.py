@@ -24,6 +24,7 @@ Constraints:
 - 0 <= grid[i][j] <= 100
 """
 
+import copy
 import heapq
 from collections import defaultdict
 from typing import NamedTuple
@@ -53,12 +54,14 @@ class Solution:
         best_for_row = [[-1] * width for _ in range(width)]
         best_for_row[0][-1] = grid[0][0] + grid[0][-1]
 
+        # same structures but for next row
+        new_positions = positions.copy()
+        new_best_for_row = copy.deepcopy(best_for_row)
+
         # iterate through rows of the grid
         for curr_row_idx in range(1, height):
             curr_grid_row = grid[curr_row_idx]
             # create positions and best cherry score array for current iteration
-            new_positions = positions.copy()
-            new_best_for_row = [[-1] * width for _ in range(width)]
             # iterate through all bot position combos
             for col1, col2 in positions:
                 cherries = best_for_row[col1][col2]
@@ -74,12 +77,13 @@ class Solution:
                             # if total cherries for the bot position combo are best so far, update
                             new_best_for_row[new_col1][new_col2] = new_total_cherries
                             new_positions.add((new_col1, new_col2))
-            # update arrays for next iteration
-            best_for_row = new_best_for_row
-            positions = new_positions
+
+            # switch arrays for next iteration
+            best_for_row, new_best_for_row = new_best_for_row, best_for_row
+            positions, new_positions = new_positions, positions
 
         # return the best score
-        return max(score for col1s in best_for_row for score in col1s)
+        return max(max(col1s) for col1s in best_for_row)
 
     def cherryPickup_v1(self, grid: list[list[int]]) -> int:
         """
