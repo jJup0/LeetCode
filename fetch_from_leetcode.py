@@ -14,8 +14,9 @@ import requests
 MAX_LINE_LENGTH = 80
 
 # TODO fix list item line overflow (new line is not indented)
-# TODO replace Optional[T] with T | None
-# TODO fix no space in docstring after a <code> sequence, bug showcase question 629
+# TODO replace Optional[T] with T | None [showcase question 21]
+# TODO fix no space in docstring after a <code> sequence [showcase question 629]
+# TODO ordered lists not rendered [showcase question 2149]
 
 
 def replace_multiple_whitespace_single_space_strip(string: str):
