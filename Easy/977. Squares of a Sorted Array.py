@@ -13,6 +13,9 @@ import bisect
 
 class Solution:
     def sortedSquares(self, nums: list[int]) -> list[int]:
+        return self.sortedSquares_from_ends(nums)
+
+    def sortedSquares_from_middle(self, nums: list[int]) -> list[int]:
         """
         Find index first positive number, then iterate using two pointers
         from that index, one going to the left to negative numbers, the
@@ -39,5 +42,26 @@ class Solution:
         while p_idx < n:
             res.append(nums[p_idx] * nums[p_idx])
             p_idx += 1
+
+        return res
+
+    def sortedSquares_from_ends(self, nums: list[int]) -> list[int]:
+        """
+        We can construct the result starting from the largest number,
+        then we do not have to find the index of the first positive number.
+        O(n) / O(n)     time / space complexity
+        """
+        n = len(nums)
+        left = 0
+        right = n - 1
+        res: list[int] = [0] * n
+
+        for i in range(n - 1, -1, -1):
+            if -nums[left] > nums[right]:
+                res[i] = nums[left] * nums[left]
+                left += 1
+            else:
+                res[i] = nums[right] * nums[right]
+                right -= 1
 
         return res
