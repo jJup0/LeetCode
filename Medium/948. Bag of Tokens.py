@@ -1,49 +1,59 @@
-from collections import deque
-from typing import List
+"""
+You start with an initial power of power, an initial score of 0, and a bag of
+tokens given as an integer array tokens, where each tokens[i] donates the value
+of token_i.
+
+Your goal is to maximize the total score by strategically playing these tokens.
+In one move, you can play an unplayed token in one of the two ways (but not
+both for the same token):
+- Face-up: If your current power is at least tokens[i], you may play token_i,
+  losing tokens[i] power and gaining 1 score.
+- Face-down: If your current score is at least 1, you may play token_i, gaining
+  tokens[i] power and losing 1 score.
+
+Return the maximum possible score you can achieve after playing any number of
+tokens.
+
+Constraints:
+- 0 <= tokens.length <= 1000
+- 0 <= tokens[i], power < 10^4
+"""
 
 
 class Solution:
-    """
-    You have an initial power of power, an initial score of 0, and a bag of tokens where tokens[i]
-    is the value of the ith token (0-indexed).
-    Your goal is to maximize your total score by potentially playing each token in one of two ways:
-        If your current power is at least tokens[i], you may play the ith token face up, losing
-        tokens[i] power and gaining 1 score.
-        If your current score is at least 1, you may play the ith token face down, gaining tokens[i]
-        power and losing 1 score.
-    Each token may be played at most once and in any order. You do not have to play all the tokens.
-    Return the largest possible score you can achieve after playing any number of tokens.
-    Constraints:
-        0 <= tokens.length <= 1000
-        0 <= tokens[i], power < 10^4
-    """
-
-    def bagOfTokensScore(self, tokens: List[int], power: int) -> int:
+    def bagOfTokensScore(self, tokens: list[int], power: int) -> int:
         """
-        Use highest valued tokens to play face down, and lowest valued to gain score
+        Greedily play lowest valued tokens face up to gain score,
+        and high value tokens face down to gain power.
         O(n * log(n)) / O(1)    time / space complexity
         """
+        # sort tokens by value to optimally, greedily play face up or down
         tokens.sort()
 
-        # i is index of next token to play face up, j is next index of token to play face down
-        i, j = 0, len(tokens) - 1
+        # i is index of next token to play face up
+        i = 0
+        # j is next index of token to play face down
+        j = len(tokens) - 1
 
         score = 0
         # while there are unused tokens
         while i <= j:
-            # flip most possible tokens face up
+            # play lowest value unplayed token face up while power is sufficient
             for i in range(i, j + 1):
                 if power < tokens[i]:
                     break
                 power -= tokens[i]
                 score += 1
 
-            # if there are two or more coins left, flip highest valued unplayed token face down
-            if score > 0 and i < j:
-                power += tokens[j]
-                j -= 1
-                score -= 1
-            else:
+            if score == 0 or i >= j:
+                # if score is 0 then no score can be sacrificed
+                # if i >= j then there are less than two tokens remaining,
+                # and it is not possible/sensible to play a token face down
                 break
+
+            # play the largest uplayed token face down
+            power += tokens[j]
+            j -= 1
+            score -= 1
 
         return score
