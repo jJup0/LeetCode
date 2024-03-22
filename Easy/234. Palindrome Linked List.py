@@ -1,43 +1,50 @@
-from typing import Optional
+"""
+Given the head of a singly linked list, return true if it is a palindrome or
+false otherwise.
 
-# Definition for singly-linked list.
-# class ListNode:
-#     def __init__(self, val=0, next=None):
-#         self.val = val
-#         self.next = next
+Constraints:
+- The number of nodes in the list is in the range [1, 10^5].
+- 0 <= Node.val <= 9
+"""
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Definition for singly-linked list.
+    class ListNode:
+        def __init__(self, x: int, next: "ListNode | None" = None):
+            self.val = x
+            self.next = next
 
 
 class Solution:
-    """
-    Given the head of a singly linked list, return true if it is a palindrome.
-    Constraints:
-        The number of nodes in the list is in the range [1, 10^5].
-        0 <= Node.val <= 9
-    """
-
-    def isPalindrome(self, head: Optional[ListNode]) -> bool:
+    def isPalindrome(self, head: ListNode | None) -> bool:
         """
         O(n) / O(1)     time / space complexity
         """
 
         # reverse first half of linked list, middle of list found using fast-slow method
-        rev = None
+        prev = None
         slow = fast = head
         while fast and fast.next:
+            assert slow is not None  # for type checker
             fast = fast.next.next
-            # rev = slow;       prepares current node to be added to reversed list
-            # rev.next = rev;   actually does this
-            # slow = slow.next  simple iteration through list
-            rev, rev.next, slow = slow, rev, slow.next
+            next_slow = slow.next
+            slow.next = prev  # point to previous node
+            prev = slow  # update prev
+            slow = next_slow  # update slow
 
         # if list length is uneven, skip to next node
         if fast:
+            assert slow is not None  # for type checker
             slow = slow.next
 
         # check if reversed first half of list is equal to second half of list
-        while rev:
-            if rev.val != slow.val:
+        # prev currently points to the head of the reversed first half of the list
+        while prev:
+            assert slow is not None  # for type checker
+            if prev.val != slow.val:
                 return False
             slow = slow.next
-            rev = rev.next
+            prev = prev.next
         return True
