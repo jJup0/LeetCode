@@ -1,18 +1,16 @@
-from typing import List
+"""
+Given n non-negative integers representing an elevation map where the width of
+each bar is 1, compute how much water it can trap after raining.
+
+Constraints:
+- n == height.length
+- 1 <= n <= 2 * 10^4
+- 0 <= height[i] <= 10^5
+"""
 
 
 class Solution:
-    """
-    Given n non-negative integers representing an elevation map where the width of each bar is 1,
-    compute how much water it can trap after raining.
-    https://assets.leetcode.com/uploads/2018/10/22/rainwatertrap.png
-    Constraints:
-        n == height.length
-        1 <= n <= 2 * 10^4
-        0 <= height[i] <= 10^5
-    """
-
-    def trap(self, heights: List[int]) -> int:
+    def trap(self, heights: list[int]) -> int:
         """
         when the term "lowest height of untrapped water" is used, this is what is meant:
         4 █ - - -
@@ -33,21 +31,21 @@ class Solution:
 
         # stack to track previous walls, always in decreasing order of height
         # stack[i] = [idx, starting_height, actual_height]
-        stack = []
+        stack: list[list[int]] = []
 
         for i, h in enumerate(heights):
             # while this wall is taller/equal the previous wall (on stack), pop it from the stack
             # and fill water between that wall and the current wall
             while stack and stack[-1][2] <= h:
                 j, h1, h2 = stack.pop()
-                water += (i-j-1) * (h2-h1)
+                water += (i - j - 1) * (h2 - h1)
 
             # if this wall is high enough to create a barrier with the the previous wall, to trap
             # water, add this water to the total, and update the lowest height of untrapped water
             # for the wall on the stack
             if stack and stack[-1][1] < h:
                 j, h1, _ = stack[-1]
-                water += (i-j-1) * (h-h1)
+                water += (i - j - 1) * (h - h1)
                 stack[-1][1] = h
 
             # add this wall to the stack, with lowest point unfilled at
@@ -55,7 +53,7 @@ class Solution:
 
         return water
 
-    def trap_stolen(self, heights: List[int]) -> int:
+    def trap_stolen(self, heights: list[int]) -> int:
         """
         stolen, but commented and minimally adapted O(1)-space solution, trap water from both sides,
         fill each index one by one.
