@@ -1,5 +1,23 @@
+"""
+Given an integer array nums, in which exactly two elements appear only once and
+all the other elements appear exactly twice. Find the two elements that appear
+only once. You can return the answer in any order.
+
+You must write an algorithm that runs in linear runtime complexity and uses
+only constant extra space.
+
+Constraints:
+- 2 <= nums.length <= 3 * 10^4
+- -2^31 <= nums[i] <= 2^31 - 1
+- Each integer in nums will appear twice, only two integers will appear once.
+"""
+
+
 class Solution:
-    def singleNumber(self, nums: List[int]) -> List[int]:
+    def singleNumber(self, nums: list[int]) -> list[int]:
+        """
+        O(n) / O(1)     time / space complexity
+        """
         xor = 0
         for num in nums:
             xor ^= num
@@ -7,7 +25,7 @@ class Solution:
         # means if a bit in xor is set, only one of the two numbers will have it set at that position
 
         # this bit hack get the lowest set bit, any will set bit will suffice though
-        bit = xor & ~(xor-1)
+        bit = xor & ~(xor - 1)
 
         # repeat xor process, but this time, separate numbers out by this set bit
         # xor the numbers with the set bit with one another, and the numbers with it cleared with one another
@@ -18,25 +36,4 @@ class Solution:
                 ret1 ^= num
             else:
                 ret2 ^= num
-        return (ret1, ret2)
-
-        # xor = 0
-        # for num in nums:
-        #     xor ^= num
-        # print(xor, bin(xor))
-        # for num in nums:
-        #     xor ^= num
-        #     print(num, xor, bin(xor))
-
-        # nums.sort()
-        # retList = []
-        # i = 0
-        # while i < len(nums) -  1:
-        #     if nums[i] == nums[i+1]:
-        #         i += 2
-        #     else:
-        #         retList.append(nums[i])
-        #         if len(retList) == 2:
-        #             return retList
-        #         i += 1
-        # return retList + [nums[-1]]
+        return [ret1, ret2]
