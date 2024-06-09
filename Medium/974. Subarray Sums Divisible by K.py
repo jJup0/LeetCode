@@ -1,16 +1,17 @@
+"""
+Given an integer array nums and an integer k, return the number of non-empty
+subarrays that have a sum divisible by k.
+
+A subarray is a contiguous part of an array.
+
+Constraints:
+- 1 <= nums.length <= 3 * 10^4
+- -10^4 <= nums[i] <= 10^4
+- 2 <= k <= 10^4
+"""
+
+
 class Solution:
-    """
-    Given an integer array nums and an integer k, return the number of non-empty subarrays that
-    have a sum divisible by k.
-
-    A subarray is a contiguous part of an array.
-
-    Constraints:
-        1 <= nums.length <= 3 * 10^4
-        -10^4 <= nums[i] <= 10^4
-        2 <= k <= 10^4
-    """
-
     def subarraysDivByK(self, nums: list[int], k: int) -> int:
         """
         A subarray A[i:j] is divisible by k if A[:i] % k == A[:j] % k, because when their sums are
@@ -31,10 +32,10 @@ class Solution:
             curr_sum += num
             buckets[curr_sum % k] += 1
 
-        # subarrays nums[:i] are already divisible
+        # buckets[0] = subarrays nums[:i] that are divisible by k
         res = buckets[0]
         for bucket_count in buckets:
             # for all other subarrays of the same modulo class, each pair i, j
             # A[i:j] is divisible by k
-            res += bucket_count * (bucket_count-1) // 2
+            res += bucket_count * (bucket_count - 1) // 2
         return res
