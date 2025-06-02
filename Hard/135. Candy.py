@@ -1,18 +1,24 @@
+"""
+There are n children standing in a line. Each child is assigned a rating value
+given in the integer array ratings.
+
+You are giving candies to these children subjected to the following requirements:
+- Each child must have at least one candy.
+- Children with a higher rating get more candies than their neighbors.
+
+Return the minimum number of candies you need to have to distribute the candies
+to the children.
+
+Constraints:
+- n == ratings.length
+- 1 <= n <= 2 * 10^4
+- 0 <= ratings[i] <= 2 * 10^4
+"""
+
 from collections import defaultdict
 
 
 class Solution:
-    """
-    Given an unsorted array of integers nums, return the length of the longest
-    consecutive elements sequence.
-
-    You must write an algorithm that runs in O(n) time.
-
-    Constraints:
-    - 0 <= nums.length <= 10^5
-    - -10^9 <= nums[i] <= 10^9
-    """
-
     def candy(self, ratings: list[int]) -> int:
         """
         Greedily assign lowest candies possible to children with lowest rating.
@@ -42,22 +48,4 @@ class Solution:
                 candies[idx] = to_insert[c]
 
         # return sum of candies needed
-        return sum(candies)
-
-    def candy_two_pass(self, ratings: list[int]) -> int:
-        n = len(ratings)
-        candies = [1] * n
-
-        # update from left to right, incrementing candies
-        # if rating higher than previous
-        for i in range(1, n):
-            if ratings[i] > ratings[i - 1]:
-                candies[i] = candies[i - 1] + 1
-
-        # update from right to left, incrementing if rating higher than
-        # next and current candies lower than next
-        for i in range(n - 2, -1, -1):
-            if ratings[i] > ratings[i + 1] and candies[i] <= candies[i + 1]:
-                candies[i] = candies[i + 1] + 1
-
         return sum(candies)
