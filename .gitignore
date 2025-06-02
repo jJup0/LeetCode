@@ -6,3 +6,4 @@ temp*.html
 .vscode
 .idea
 big_input.txt
+.DS_store
