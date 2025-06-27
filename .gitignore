@@ -7,3 +7,5 @@ temp*.html
 .idea
 big_input.txt
 .DS_store
+contest/test_case*
+typings
