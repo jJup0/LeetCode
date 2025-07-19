@@ -19,79 +19,22 @@ Constraints:
 - Each folder name is unique.
 """
 
-from typing import Any
 
-
-class OriginalSolution:
+class Solution:
     def removeSubfolders(self, folders: list[str]) -> list[str]:
         """
-        L := longest path in folders
-        x := total characters in folders
-        d := total directories
-        O(x) / O(d)     time / space complexity
+        Sort folder and simply check if previous folder is a prefix
+        Complexity:
+            n := sum(map(len, folders))
+            Time: O(n * log(n))
+            Space: O(n)
         """
-        file_system = self.build_filesystem(folders)
-        self.delete_subdirs(file_system)
-        self.remaining_dirs: list[str] = []
-        self.reconstruct_dirs([], file_system)
-        return self.remaining_dirs
-
-    def build_filesystem(self, folders: list[str]):
-        """
-        O(x) / O(d)     time / space complexity
-        """
-        file_system: dict[str, Any] = {}
-        # build file system
-        for folder in folders:
-            curr_dir = file_system
-            for dir_name in folder.split("/"):
-                if dir_name not in curr_dir:
-                    curr_dir[dir_name] = {}
-                curr_dir = curr_dir[dir_name]
-            curr_dir["$"] = True
-        return file_system
-
-    def delete_subdirs(self, curr_dir: dict[str, Any]):
-        """
-        O(d) / O(1)     time / space complexity
-        """
-        if "$" in curr_dir:
-            curr_dir.clear()
-            return
-        for sub_dir in curr_dir.values():
-            self.delete_subdirs(sub_dir)
-
-    def reconstruct_dirs(self, curr_path: list[str], curr_dir: dict[str, Any]):
-        """
-        O(x) / O(L)     time / space complexity
-        """
-        if not curr_dir:
-            self.remaining_dirs.append("/".join(curr_path))
-            return
-
-        for dir_name, subdir_obj in curr_dir.items():
-            curr_path.append(dir_name)
-            self.reconstruct_dirs(curr_path, subdir_obj)
-            curr_path.pop()
-
-
-class SolutionFromSomeoneElse:
-    def removeSubfolders_simple(self, folder: list[str]) -> list[str]:
-        """
-        Sort paths, sub directories will follow parent directories. Slower by a factor of log(n).
-        l := average length of paths in folder, n := len(folder)
-        O(l * n * log(n))
-        """
-        folder.sort()
+        folders.sort()
         res: list[str] = []
         prev = "$"
-        for path in folder:
-            if not path.startswith(prev + "/"):
-                # new non-subdirectory
-                res.append(path)
-                prev = path
+        for folder in folders:
+            if folder.startswith(prev):
+                continue
+            res.append(folder)
+            prev = folder
         return res
-
-
-class Solution(OriginalSolution):
-    pass
