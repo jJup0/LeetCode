@@ -33,7 +33,7 @@ class Solution:
         res: list[str] = []
         prev = "$"
         for folder in folders:
-            if folder.startswith(prev):
+            if folder.startswith(prev + "/"):
                 continue
             res.append(folder)
             prev = folder
